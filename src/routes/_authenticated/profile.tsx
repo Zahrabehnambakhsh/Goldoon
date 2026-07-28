@@ -94,9 +94,9 @@ function Stat({ value, label }: { value: string; label: string }) {
   );
 }
 
-function Row({ icon, label }: { icon: React.ReactNode; label: string }) {
+function Row({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick?: () => void }) {
   return (
-    <button className="flex w-full items-center gap-3 rounded-xl p-3 text-right transition hover:bg-brand-100">
+    <button onClick={onClick} className="flex w-full items-center gap-3 rounded-xl p-3 text-right transition hover:bg-brand-100">
       <span className="grid size-9 place-items-center rounded-full bg-brand-100 text-primary">
         {icon}
       </span>
