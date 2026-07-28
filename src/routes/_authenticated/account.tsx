@@ -99,9 +99,52 @@ function AccountPage() {
         </button>
       </div>
 
-      <p className="mb-5 rounded-2xl bg-brand-100 p-3 text-xs leading-6 text-primary/80">
+      <p className="mb-4 rounded-2xl bg-brand-100 p-3 text-xs leading-6 text-primary/80">
         این اطلاعات برای شخصی‌سازی تجربه شماست. در آینده روی تاریخ تولد شما تخفیف تولد فعال می‌شود 🎁
       </p>
+
+      <div className="mb-5 overflow-hidden rounded-2xl border border-primary/15 bg-gradient-to-br from-brand-100 to-card p-4 shadow-soft">
+        <div className="mb-3 flex items-center gap-2">
+          <span className="grid size-9 place-items-center rounded-full bg-primary text-primary-foreground">
+            <Gift className="size-4" />
+          </span>
+          <div className="flex-1">
+            <p className="text-sm font-bold text-primary">پیش‌نمایش تخفیف تولد</p>
+            <p className="text-[11px] text-primary/70">وقتی اکانت پولی شد، خودکار اعمال می‌شود</p>
+          </div>
+        </div>
+
+        <div className="flex items-end justify-between rounded-xl bg-card p-3">
+          <div>
+            <p className="text-[11px] text-muted-foreground">تخفیف فعلی شما</p>
+            <p className="text-3xl font-extrabold text-primary fa-num leading-tight">
+              {toFa(discount.percent)}
+              <span className="text-lg">٪</span>
+            </p>
+            <p className="mt-0.5 text-[11px] text-primary/70">سطح: {discount.tier}</p>
+          </div>
+          <div className="text-left">
+            <Cake className="mb-1 ml-auto size-5 text-primary/70" />
+            {discount.daysUntil === null ? (
+              <p className="text-[11px] text-muted-foreground">تاریخ تولد را وارد کنید</p>
+            ) : discount.daysUntil === 0 ? (
+              <p className="text-xs font-bold text-primary">امروز تولدتونه! 🎂</p>
+            ) : (
+              <p className="text-[11px] text-primary/80">
+                <span className="fa-num font-bold text-primary">{toFa(discount.daysUntil)}</span> روز تا تولد
+              </p>
+            )}
+          </div>
+        </div>
+
+        <ul className="mt-3 space-y-1 text-[11px] text-primary/80">
+          <li>🎉 روز تولد: <span className="fa-num font-bold">۴۰٪</span></li>
+          <li>🎁 هفته تولد (۷ روز): <span className="fa-num font-bold">۲۵٪</span></li>
+          <li>🌱 ماه تولد (۳۰ روز): <span className="fa-num font-bold">۱۵٪</span></li>
+          <li>💚 بقیه سال: <span className="fa-num font-bold">۱۰٪</span> پایه وفاداری</li>
+        </ul>
+      </div>
+
 
       <form onSubmit={onSubmit} className="space-y-4">
         <Field label="نام">
