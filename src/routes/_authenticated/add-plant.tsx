@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowRight, Camera, Minus, Plus } from "lucide-react";
+import { ArrowRight, Camera, Minus, Plus, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { createPlant } from "@/lib/plants.functions";
+import { suggestWateringInterval } from "@/lib/suggest.functions";
 import { toFa } from "@/lib/fa";
 import { toast } from "sonner";
 
@@ -28,6 +29,7 @@ function AddPlantPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const createFn = useServerFn(createPlant);
+  const suggestFn = useServerFn(suggestWateringInterval);
 
   const [name, setName] = useState("");
   const [latin, setLatin] = useState("");
@@ -38,6 +40,28 @@ function AddPlantPage() {
   const [notes, setNotes] = useState("");
   const [imageData, setImageData] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [suggesting, setSuggesting] = useState(false);
+  const [suggestReason, setSuggestReason] = useState<string | null>(null);
+
+  const handleSuggest = async () => {
+    if (!name.trim()) {
+      toast.error("اول نام گیاه را وارد کن");
+      return;
+    }
+    setSuggesting(true);
+    try {
+      const res = await suggestFn({
+        data: { name, latin_name: latin || null, type, light_level: light },
+      });
+      setInterval_(res.days);
+      setSuggestReason(res.reason);
+      toast.success(`پیشنهاد هوش مصنوعی: هر ${toFa(res.days)} روز`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "خطا در دریافت پیشنهاد");
+    } finally {
+      setSuggesting(false);
+    }
+  };
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -161,6 +185,20 @@ function AddPlantPage() {
               <Plus className="size-4" />
             </button>
           </div>
+          <button
+            type="button"
+            onClick={handleSuggest}
+            disabled={suggesting}
+            className="mt-2 flex w-full items-center justify-center gap-2 rounded-full border border-primary/30 bg-brand-100 py-2.5 text-xs font-medium text-primary disabled:opacity-60"
+          >
+            <Sparkles className="size-4" />
+            {suggesting ? "در حال دریافت پیشنهاد..." : "پیشنهاد هوش مصنوعی ✨"}
+          </button>
+          {suggestReason && (
+            <p className="mt-2 rounded-xl bg-brand-100 px-3 py-2 text-[11px] leading-relaxed text-primary">
+              {suggestReason}
+            </p>
+          )}
         </Field>
 
         <Field label="آخرین آبیاری">
