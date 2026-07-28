@@ -69,3 +69,43 @@ export const getProfile = createServerFn({ method: "GET" })
       .maybeSingle();
     return data;
   });
+
+const ProfileUpdateInput = z.object({
+  name: z.string().trim().min(1, "نام لازم است").max(80),
+  family_name: z.string().trim().max(80).optional().nullable(),
+  birth_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "تاریخ نامعتبر")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  phone: z
+    .string()
+    .trim()
+    .max(20)
+    .regex(/^[0-9+\-\s()]*$/, "شماره نامعتبر")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+});
+
+export const updateProfile = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => ProfileUpdateInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const payload = {
+      id: context.userId,
+      name: data.name,
+      family_name: data.family_name || null,
+      birth_date: data.birth_date ? data.birth_date : null,
+      phone: data.phone || null,
+      updated_at: new Date().toISOString(),
+    };
+    const { data: row, error } = await context.supabase
+      .from("profiles")
+      .upsert(payload, { onConflict: "id" })
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return row;
+  });
