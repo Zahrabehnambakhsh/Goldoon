@@ -58,6 +58,7 @@ function AccountPage() {
   const [birthDate, setBirthDate] = useState(p?.birth_date ?? "");
   const [phone, setPhone] = useState(p?.phone ?? "");
   const [saving, setSaving] = useState(false);
+  const discount = useMemo(() => birthdayDiscount(birthDate), [birthDate]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
