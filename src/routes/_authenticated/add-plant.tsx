@@ -185,6 +185,20 @@ function AddPlantPage() {
               <Plus className="size-4" />
             </button>
           </div>
+          <button
+            type="button"
+            onClick={handleSuggest}
+            disabled={suggesting}
+            className="mt-2 flex w-full items-center justify-center gap-2 rounded-full border border-primary/30 bg-brand-100 py-2.5 text-xs font-medium text-primary disabled:opacity-60"
+          >
+            <Sparkles className="size-4" />
+            {suggesting ? "در حال دریافت پیشنهاد..." : "پیشنهاد هوش مصنوعی ✨"}
+          </button>
+          {suggestReason && (
+            <p className="mt-2 rounded-xl bg-brand-100 px-3 py-2 text-[11px] leading-relaxed text-primary">
+              {suggestReason}
+            </p>
+          )}
         </Field>
 
         <Field label="آخرین آبیاری">
