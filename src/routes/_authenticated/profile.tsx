@@ -69,7 +69,7 @@ function ProfilePage() {
       </div>
 
       <div className="mb-4 space-y-2 rounded-2xl border border-border bg-card p-2 shadow-soft">
-        <Row icon={<UserIcon className="size-4" />} label="اطلاعات حساب" />
+        <Row icon={<UserIcon className="size-4" />} label="اطلاعات حساب" onClick={() => navigate({ to: "/account" })} />
         <Row icon={<Bell className="size-4" />} label="اعلان‌ها" />
         <Row icon={<Languages className="size-4" />} label="زبان برنامه" />
       </div>
@@ -94,9 +94,9 @@ function Stat({ value, label }: { value: string; label: string }) {
   );
 }
 
-function Row({ icon, label }: { icon: React.ReactNode; label: string }) {
+function Row({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick?: () => void }) {
   return (
-    <button className="flex w-full items-center gap-3 rounded-xl p-3 text-right transition hover:bg-brand-100">
+    <button onClick={onClick} className="flex w-full items-center gap-3 rounded-xl p-3 text-right transition hover:bg-brand-100">
       <span className="grid size-9 place-items-center rounded-full bg-brand-100 text-primary">
         {icon}
       </span>
