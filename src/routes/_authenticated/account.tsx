@@ -1,9 +1,32 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { ArrowRight, Save } from "lucide-react";
+import { useState, useMemo } from "react";
+import { ArrowRight, Save, Gift, Cake } from "lucide-react";
 import { getProfile, updateProfile } from "@/lib/plants.functions";
+import { toFa } from "@/lib/fa";
 import { toast } from "sonner";
+
+function birthdayDiscount(birthDate: string | null | undefined): {
+  percent: number;
+  daysUntil: number | null;
+  tier: string;
+} {
+  if (!birthDate || !/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
+    return { percent: 10, daysUntil: null, tier: "پایه (وفاداری)" };
+  }
+  const [_, m, d] = birthDate.split("-").map(Number);
+  const now = new Date();
+  let next = new Date(now.getFullYear(), m - 1, d);
+  if (next < new Date(now.getFullYear(), now.getMonth(), now.getDate())) {
+    next = new Date(now.getFullYear() + 1, m - 1, d);
+  }
+  const ms = 24 * 60 * 60 * 1000;
+  const daysUntil = Math.round((next.getTime() - Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())) / ms);
+  if (daysUntil === 0) return { percent: 40, daysUntil, tier: "روز تولد 🎉" };
+  if (daysUntil <= 7) return { percent: 25, daysUntil, tier: "هفته تولد" };
+  if (daysUntil <= 30) return { percent: 15, daysUntil, tier: "ماه تولد" };
+  return { percent: 10, daysUntil, tier: "پایه (وفاداری)" };
+}
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
