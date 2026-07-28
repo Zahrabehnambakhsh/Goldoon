@@ -17,6 +17,7 @@ import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedDiagnoseRouteImport } from './routes/_authenticated/diagnose'
 import { Route as AuthenticatedAddPlantRouteImport } from './routes/_authenticated/add-plant'
+import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -57,10 +58,16 @@ const AuthenticatedAddPlantRoute = AuthenticatedAddPlantRouteImport.update({
   path: '/add-plant',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/account': typeof AuthenticatedAccountRoute
   '/add-plant': typeof AuthenticatedAddPlantRoute
   '/diagnose': typeof AuthenticatedDiagnoseRoute
   '/home': typeof AuthenticatedHomeRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/account': typeof AuthenticatedAccountRoute
   '/add-plant': typeof AuthenticatedAddPlantRoute
   '/diagnose': typeof AuthenticatedDiagnoseRoute
   '/home': typeof AuthenticatedHomeRoute
@@ -81,6 +89,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/add-plant': typeof AuthenticatedAddPlantRoute
   '/_authenticated/diagnose': typeof AuthenticatedDiagnoseRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
@@ -92,6 +101,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/account'
     | '/add-plant'
     | '/diagnose'
     | '/home'
@@ -101,6 +111,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/account'
     | '/add-plant'
     | '/diagnose'
     | '/home'
@@ -111,6 +122,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/account'
     | '/_authenticated/add-plant'
     | '/_authenticated/diagnose'
     | '/_authenticated/home'
@@ -182,10 +194,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAddPlantRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/account': {
+      id: '/_authenticated/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AuthenticatedAccountRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedAddPlantRoute: typeof AuthenticatedAddPlantRoute
   AuthenticatedDiagnoseRoute: typeof AuthenticatedDiagnoseRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
@@ -194,6 +214,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedAddPlantRoute: AuthenticatedAddPlantRoute,
   AuthenticatedDiagnoseRoute: AuthenticatedDiagnoseRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,

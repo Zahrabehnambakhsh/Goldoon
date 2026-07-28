@@ -69,7 +69,7 @@ function ProfilePage() {
       </div>
 
       <div className="mb-4 space-y-2 rounded-2xl border border-border bg-card p-2 shadow-soft">
-        <Row icon={<UserIcon className="size-4" />} label="اطلاعات حساب" />
+        <Row icon={<UserIcon className="size-4" />} label="اطلاعات حساب" onClick={() => navigate({ to: "/account" })} />
         <Row icon={<Bell className="size-4" />} label="اعلان‌ها" />
         <Row icon={<Languages className="size-4" />} label="زبان برنامه" />
       </div>
