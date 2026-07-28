@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowRight, Camera, Minus, Plus } from "lucide-react";
+import { ArrowRight, Camera, Minus, Plus, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { createPlant } from "@/lib/plants.functions";
+import { suggestWateringInterval } from "@/lib/suggest.functions";
 import { toFa } from "@/lib/fa";
 import { toast } from "sonner";
 
