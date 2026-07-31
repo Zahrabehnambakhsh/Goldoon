@@ -4,7 +4,6 @@ import logoAsset from "@/assets/logo.png.asset.json";
 import { ensureSession } from "@/lib/device-session";
 
 export const Route = createFileRoute("/")({
-  ssr: false,
   head: () => ({
     meta: [
       { title: "مراقبت آینده گیاه" },
