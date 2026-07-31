@@ -45,7 +45,8 @@ function ProfilePage() {
     qc.clear();
     await supabase.auth.signOut();
     toast.success("خارج شدی");
-    navigate({ to: "/auth", replace: true });
+    localStorage.removeItem("fpc_device_account");
+    navigate({ to: "/", replace: true });
   };
 
   return (
