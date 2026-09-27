@@ -37,9 +37,7 @@ export const sendChat = createServerFn({ method: "POST" })
       .order("created_at", { ascending: true })
       .limit(30);
 
-    const messages: Array<{ role: "system" | "user" | "assistant"; content: unknown }> = [
-      { role: "system", content: SYSTEM_PROMPT },
-    ];
+    const messages: Array<{ role: "user" | "assistant"; content: unknown }> = [];
     for (const m of history ?? []) {
       if (m.role === "user" && m.image_url) {
         messages.push({
@@ -57,6 +55,7 @@ export const sendChat = createServerFn({ method: "POST" })
     try {
       const { text } = await generateText({
         model,
+        instructions: SYSTEM_PROMPT,
         // @ts-expect-error - multimodal messages typed loosely
         messages,
       });

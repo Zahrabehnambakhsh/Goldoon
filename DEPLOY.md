@@ -28,13 +28,23 @@
 cp .env.example .env
 ```
 
-و مقادیر را پر کنید. نمونه برای سرویس‌های مختلف هوش مصنوعی:
+و مقادیر را پر کنید.
 
-| سرویس | `AI_BASE_URL` | نمونه `AI_MODEL` |
-| --- | --- | --- |
-| OpenAI | `https://api.openai.com/v1` | `gpt-4o-mini` |
-| OpenRouter | `https://openrouter.ai/api/v1` | `google/gemini-2.5-flash` |
-| Google Gemini | `https://generativelanguage.googleapis.com/v1beta/openai` | `gemini-2.5-flash` |
+### هوش مصنوعی رایگان
+
+| سرویس | هزینه | `AI_BASE_URL` | `AI_MODEL` |
+| --- | --- | --- | --- |
+| **Google Gemini** (پیش‌فرض) | سهمیه‌ی روزانه‌ی رایگان | `https://generativelanguage.googleapis.com/v1beta/openai` | `gemini-flash-latest` |
+| OpenRouter | مدل‌های `:free` رایگان‌اند | `https://openrouter.ai/api/v1` | `google/gemma-3-27b-it:free` |
+| OpenAI | پولی | `https://api.openai.com/v1` | `gpt-4o-mini` |
+
+گرفتن کلید رایگان Gemini:
+1. به [aistudio.google.com/apikey](https://aistudio.google.com/apikey) بروید و با حساب گوگل وارد شوید.
+2. روی **Create API key** بزنید و کلید را کپی کنید.
+3. در `.env` جلوی `AI_API_KEY` بگذارید.
+
+> سرویس‌های گوگل و OpenRouter از ایران مستقیم در دسترس نیستند. برای ساخت کلید ممکن است به VPN نیاز باشد، و سروری که برنامه روی آن اجرا می‌شود باید خارج از ایران باشد.
+> در سهمیه‌ی رایگان، گوگل ممکن است از پیام‌ها برای بهبود مدل‌هایش استفاده کند.
 
 ## ۴. اجرای محلی
 
