@@ -6,7 +6,7 @@ const PlantInput = z.object({
   name: z.string().min(1).max(80),
   latin_name: z.string().max(120).optional().nullable(),
   type: z.string().max(40).optional().nullable(),
-  image_url: z.string().max(500).optional().nullable(),
+  image_url: z.string().max(400000).optional().nullable(),
   watering_interval_days: z.number().int().min(1).max(365).default(7),
   last_watered: z.string(),
   light_level: z.enum(["low", "medium", "high"]).default("medium"),
