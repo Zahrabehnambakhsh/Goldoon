@@ -11,6 +11,8 @@ export function getAiModel() {
 
   const provider = createOpenAICompatible({
     name: "ai",
+    // Lets the watering suggestion get JSON in one request instead of failing over to a second one.
+    supportsStructuredOutputs: true,
     baseURL: process.env.AI_BASE_URL || "https://generativelanguage.googleapis.com/v1beta/openai",
     apiKey,
   });
