@@ -77,11 +77,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1" },
-      { title: "مراقبت آینده گیاه" },
-      { name: "description", content: "مراقبت هوشمند از گیاهان با یادآور آبیاری و تشخیص با هوش مصنوعی." },
+      { title: "Goldoon" },
+      {
+        name: "description",
+        content: "مراقبت هوشمند از گیاهان با یادآور آبیاری و تشخیص با هوش مصنوعی.",
+      },
       { name: "theme-color", content: "#1B4332" },
-      { property: "og:title", content: "مراقبت آینده گیاه" },
-      { property: "og:description", content: "مراقبت هوشمند از گیاهان با یادآور آبیاری و تشخیص با هوش مصنوعی." },
+      { property: "og:title", content: "Goldoon" },
+      {
+        property: "og:description",
+        content: "مراقبت هوشمند از گیاهان با یادآور آبیاری و تشخیص با هوش مصنوعی.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -131,7 +137,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="mx-auto min-h-screen w-full max-w-[390px] bg-background text-foreground">
+      <div className="mx-auto min-h-screen w-full max-w-[400px] text-foreground">
         <Outlet />
       </div>
       <Toaster position="top-center" richColors dir="rtl" />

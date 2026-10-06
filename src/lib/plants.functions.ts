@@ -47,7 +47,57 @@ export const waterPlant = createServerFn({ method: "POST" })
       .update({ last_watered: today })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
+    // History is best-effort: watering still counts if the log table isn't available yet.
+    await context.supabase
+      .from("watering_logs")
+      .insert({ user_id: context.userId, plant_id: data.id, watered_on: today });
     return { ok: true };
+  });
+
+export const getPlant = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: row, error } = await context.supabase
+      .from("plants")
+      .select("*")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!row) throw new Error("گیاه پیدا نشد");
+    return row;
+  });
+
+export const updatePlant = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => PlantInput.extend({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { id, ...fields } = data;
+    const { data: row, error } = await context.supabase
+      .from("plants")
+      .update(fields)
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return row;
+  });
+
+/** Watering history: total count plus every watering date from the last 60 days. */
+export const getWateringStats = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const since = new Date();
+    since.setDate(since.getDate() - 60);
+    const [{ count, error: countError }, { data: rows, error: rowsError }] = await Promise.all([
+      context.supabase.from("watering_logs").select("id", { count: "exact", head: true }),
+      context.supabase
+        .from("watering_logs")
+        .select("watered_on")
+        .gte("watered_on", since.toISOString().slice(0, 10)),
+    ]);
+    if (countError || rowsError) return { available: false, total: 0, dates: [] as string[] };
+    return { available: true, total: count ?? 0, dates: (rows ?? []).map((r) => r.watered_on) };
   });
 
 export const deletePlant = createServerFn({ method: "POST" })

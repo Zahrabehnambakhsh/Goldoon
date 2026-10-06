@@ -1,4 +1,4 @@
-# باغچه هوشمند (Smart Garden)
+# Goldoon (گلدون)
 
 Build a full-stack mobile-first plant care web app called "Future Plant Care" in Farsi/Persian (RTL).
 
