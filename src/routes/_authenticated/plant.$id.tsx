@@ -1,14 +1,15 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Droplet, Trash2 } from "lucide-react";
+import { Droplet, Trash2, CalendarDays } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Foliage } from "@/components/foliage";
 import { BackButton, BigStat, IconBubble, Segmented } from "@/components/garden-ui";
 import { PlantForm } from "@/components/plant-form";
 import { deletePlant, getPlant, updatePlant, waterPlant } from "@/lib/plants.functions";
-import { daysBetween, faDate, plantEmoji, toFa } from "@/lib/fa";
+import { daysBetween, faDate, toFa } from "@/lib/fa";
+import { PlantIcon } from "@/components/flat-art";
 
 export const Route = createFileRoute("/_authenticated/plant/$id")({
   head: () => ({
@@ -65,7 +66,7 @@ function PlantPage() {
     try {
       await waterFn({ data: { id } });
       await refresh();
-      toast.success("آبیاری ثبت شد 💧");
+      toast.success("آبیاری ثبت شد");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "خطا");
     } finally {
@@ -140,15 +141,12 @@ function PlantPage() {
             ) : (
               <>
                 <Foliage />
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute left-1/2 top-[34px] -translate-x-1/2 text-[110px] leading-none drop-shadow-[0_16px_18px_rgba(60,40,10,0.25)]"
-                >
-                  {plantEmoji(plant.type)}
+                <span className="pointer-events-none absolute left-1/2 top-[20px] grid size-[150px] -translate-x-1/2 place-items-center rounded-full bg-white/55">
+                  <PlantIcon type={plant.type} className="size-[110px]" />
                 </span>
               </>
             )}
-            <div className="relative mt-auto -mx-5 rounded-t-[28px] rounded-b-[32px] border-t border-white/90 bg-[#FBF0DE]/95 px-5 pb-4 pt-3.5">
+            <div className="relative mt-auto -mx-5 rounded-t-[28px] rounded-b-[32px] border-t border-white/90 bg-[#FFFFFF]/95 px-5 pb-4 pt-3.5">
               <h1 className="truncate text-2xl font-extrabold">{plant.name}</h1>
               {plant.latin_name && (
                 <p className="truncate text-right text-xs text-muted-foreground" dir="ltr">
@@ -171,11 +169,13 @@ function PlantPage() {
           <div className="mb-3.5 grid grid-cols-2 gap-3">
             <div
               className={`glass-card flex flex-col gap-3.5 rounded-3xl p-3.5 ${
-                due ? "!bg-gradient-to-br from-warn-soft/95 to-[#FCF9F3]/90" : ""
+                due ? "!bg-gradient-to-br from-warn-soft/95 to-[#FFFFFF]/90" : ""
               }`}
             >
               <div className="flex items-center gap-2 text-[13px] font-semibold">
-                <IconBubble tone={due ? "peach" : "mint"}>💧</IconBubble>
+                <IconBubble tone={due ? "peach" : "mint"}>
+                  <Droplet className="size-5" />
+                </IconBubble>
                 آبیاری بعدی
               </div>
               {daysLeft < 0 ? (
@@ -193,7 +193,9 @@ function PlantPage() {
             </div>
             <div className="glass-card flex flex-col gap-3.5 rounded-3xl p-3.5">
               <div className="flex items-center gap-2 text-[13px] font-semibold">
-                <IconBubble tone="lilac">🗓️</IconBubble>
+                <IconBubble tone="lilac">
+                  <CalendarDays className="size-5 text-[#6B5FB5]" />
+                </IconBubble>
                 دور آبیاری
               </div>
               <BigStat

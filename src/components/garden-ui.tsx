@@ -90,7 +90,7 @@ export function IconBubble({
     peach: "bg-peach",
     rose: "bg-rose",
     lilac: "bg-lilac",
-    cream: "bg-[#F3ECDC]",
+    cream: "bg-[#FFF4E0]",
   }[tone];
   return (
     <span className={`grid size-10 shrink-0 place-items-center rounded-full text-lg ${bg}`}>

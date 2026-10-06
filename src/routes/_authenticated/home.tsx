@@ -1,9 +1,22 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Bell, Search, Plus, Droplet, Leaf, BarChart3, ChevronLeft } from "lucide-react";
+import {
+  Bell,
+  Search,
+  Plus,
+  Droplet,
+  Leaf,
+  BarChart3,
+  ChevronLeft,
+  Flame,
+  Sprout,
+  Sparkles,
+  ScanSearch,
+} from "lucide-react";
 import { listPlants, waterPlant, getProfile, getWateringStats } from "@/lib/plants.functions";
-import { toFa, daysBetween, plantEmoji, localIso, wateringStreak, addressName } from "@/lib/fa";
+import { toFa, daysBetween, localIso, wateringStreak, addressName } from "@/lib/fa";
+import { HeroPlant, PlantIcon } from "@/components/flat-art";
 import { Foliage } from "@/components/foliage";
 import { SquareButton, BigStat } from "@/components/garden-ui";
 import { toast } from "sonner";
@@ -93,7 +106,7 @@ function HomePage() {
       await waterFn({ data: { id } });
       qc.invalidateQueries({ queryKey: ["plants"] });
       qc.invalidateQueries({ queryKey: ["waterings"] });
-      toast.success("آبیاری ثبت شد 💧");
+      toast.success("آبیاری ثبت شد");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "خطا");
     }
@@ -104,7 +117,7 @@ function HomePage() {
       {/* Top bar */}
       <header className="mb-3.5 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="grid size-[46px] place-items-center rounded-2xl border-2 border-white bg-gradient-to-br from-[#F5D9B8] to-[#E9BE95] text-lg font-extrabold text-[#6B3B12] shadow-soft">
+          <div className="grid size-[46px] place-items-center rounded-2xl border-2 border-white bg-gradient-to-br from-[#E4F3E7] to-[#CDE8D3] text-lg font-extrabold text-[#23573A] shadow-soft">
             {initial}
           </div>
           <div className="flex items-center gap-1.5 text-lg font-bold">
@@ -128,26 +141,29 @@ function HomePage() {
           {isEmpty ? "باغچه‌ات هنوز خالیه؛ بیا اولین گیاهت رو بکاریم." : "گیاهانت منتظرتن!"}
         </p>
         <div
-          className={`absolute left-[18px] top-[22px] flex items-center gap-1.5 rounded-[18px] bg-[#FCF6EC]/95 px-3.5 py-2 text-xl font-extrabold shadow-soft fa-num ${
+          className={`absolute left-[18px] top-[22px] flex items-center gap-1.5 rounded-[18px] border border-white bg-white/70 px-3 py-2 text-lg font-extrabold backdrop-blur fa-num ${
             isEmpty ? "hidden" : ""
           }`}
         >
-          {streak > 0 ? "🔥" : "🌱"} {toFa(streak > 0 ? streak : daysUsing)}
+          {streak > 0 ? (
+            <Flame className="size-[18px] text-warn" />
+          ) : (
+            <Sprout className="size-[18px] text-primary" />
+          )}
+          {toFa(streak > 0 ? streak : daysUsing)}
           <span className="text-[11px] font-medium text-muted-foreground">
             {streak > 0 ? "روز پشت‌سرهم" : "روز با گلدون"}
           </span>
         </div>
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute left-[34px] top-[88px] text-[104px] leading-none drop-shadow-[0_16px_18px_rgba(60,40,10,0.25)]"
-        >
-          🪴
-        </span>
+        <HeroPlant className="pointer-events-none absolute left-[18px] top-[76px] size-[136px]" />
 
-        <div className="relative -mx-5 mt-auto rounded-t-[28px] rounded-b-[32px] border-t border-white/90 bg-[#FBF0DE]/95 px-5 pb-[18px] pt-4">
+        <div className="relative -mx-5 mt-auto rounded-t-[28px] rounded-b-[32px] border-t border-white bg-white/70 px-5 pb-[18px] pt-4 backdrop-blur-xl">
           {isEmpty ? (
             <div className="flex flex-col gap-3">
-              <h2 className="text-base font-bold">اولین قدم 🌱</h2>
+              <h2 className="flex items-center gap-1.5 text-base font-bold">
+                <Sprout className="size-4 text-primary" />
+                اولین قدم
+              </h2>
               <Link
                 to="/add-plant"
                 className="flex h-[52px] items-center justify-center gap-2 rounded-full bg-primary text-[15px] font-semibold text-primary-foreground shadow-soft transition hover:bg-brand-900"
@@ -272,7 +288,7 @@ function HomePage() {
 
           <div className="mb-3.5 grid grid-cols-2 gap-3">
             {filtered.length === 0 && (
-              <div className="col-span-2 rounded-3xl border-[1.5px] border-dashed border-[#D9CFBD] p-7 text-center text-sm text-muted-foreground">
+              <div className="col-span-2 rounded-3xl border-[1.5px] border-dashed border-[#CFE0D3] p-7 text-center text-sm text-muted-foreground">
                 {plants.length
                   ? "گیاهی با این نام پیدا نشد."
                   : "هنوز گیاهی اضافه نکردی. با دکمهٔ + شروع کن!"}
@@ -286,7 +302,7 @@ function HomePage() {
                 <div
                   key={p.id}
                   className={`glass-card flex min-w-0 flex-col gap-2.5 rounded-3xl p-3.5 ${
-                    due ? "!bg-gradient-to-br from-warn-soft/95 to-[#FCF9F3]/90" : ""
+                    due ? "!bg-gradient-to-br from-warn-soft/95 to-[#FFFFFF]/90" : ""
                   }`}
                 >
                   <Link
@@ -304,7 +320,7 @@ function HomePage() {
                         {p.image_url ? (
                           <img src={p.image_url} alt="" className="size-full object-cover" />
                         ) : (
-                          plantEmoji(p.type)
+                          <PlantIcon type={p.type} className="size-7" />
                         )}
                       </span>
                       <div className="min-w-0">
@@ -368,8 +384,8 @@ function HomePage() {
         onClick={() => navigate({ to: "/diagnose" })}
         className="glass-card mb-6 flex w-full items-center gap-3 rounded-[30px] p-3.5 text-right"
       >
-        <span className="grid size-[92px] shrink-0 place-items-center rounded-[22px] bg-gradient-to-br from-[#D6E9CC] to-[#F5EBDD] text-[44px]">
-          🌿
+        <span className="grid size-[84px] shrink-0 place-items-center rounded-[22px] bg-brand-100">
+          <ScanSearch className="size-9 text-primary" strokeWidth={1.6} />
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-base font-bold">تشخیص هوشمند گیاه</span>
@@ -377,7 +393,7 @@ function HomePage() {
             عکس بگیر و از متخصص هوش مصنوعی بپرس چه مشکلی داره
           </span>
         </span>
-        <span className="grid size-11 shrink-0 place-items-center rounded-full border-[3px] border-primary bg-brand-100 text-primary">
+        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
           <ChevronLeft className="size-5" />
         </span>
       </button>
@@ -426,17 +442,17 @@ function WaterButton({
 function GettingStarted() {
   const steps = [
     {
-      icon: "🪴",
+      Icon: Sprout,
       title: "گیاهت رو اضافه کن",
       text: "اسم، نوع و نور محل نگهداریش رو بنویس؛ عکس هم می‌تونی بذاری.",
     },
     {
-      icon: "✨",
+      Icon: Sparkles,
       title: "دور آبیاری رو تنظیم کن",
       text: "خودت بزن یا از هوش مصنوعی بخواه پیشنهاد بده.",
     },
     {
-      icon: "💧",
+      Icon: Droplet,
       title: "هر روز یه نگاه بنداز",
       text: "هر گیاهی آب بخواد اینجا و توی یادآورها نشونت می‌دیم.",
     },
@@ -447,8 +463,8 @@ function GettingStarted() {
       <ol className="space-y-3">
         {steps.map((st, i) => (
           <li key={st.title} className="flex items-start gap-3">
-            <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-brand-100 text-xl">
-              {st.icon}
+            <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-brand-100 text-primary">
+              <st.Icon className="size-5" />
             </span>
             <div className="min-w-0">
               <p className="text-sm font-bold">

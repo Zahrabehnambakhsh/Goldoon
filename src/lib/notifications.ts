@@ -76,7 +76,7 @@ export async function maybeNotifyDuePlants(duePlantNames: string[], now = new Da
 
   const names = duePlantNames.slice(0, 3).join("، ");
   const more = duePlantNames.length > 3 ? ` و ${duePlantNames.length - 3} گیاه دیگه` : "";
-  const sent = await showNotification("وقت آبیاریه 💧", `${names}${more} منتظر آب هستن.`);
+  const sent = await showNotification("وقت آبیاریه", `${names}${more} منتظر آب هستن.`);
   if (sent) {
     try {
       localStorage.setItem(LAST_KEY, today);

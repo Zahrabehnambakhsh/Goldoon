@@ -27,11 +27,11 @@ export function BottomNav() {
                 aria-label={label}
                 title={label}
                 className={`grid size-[52px] place-items-center rounded-full transition ${
-                  active
-                    ? "bg-white text-primary"
-                    : isAdd
-                      ? "bg-primary text-primary-foreground"
-                      : "text-white/45 hover:text-white/85"
+                  isAdd
+                    ? "bg-primary text-primary-foreground shadow-[0_6px_16px_rgba(58,138,92,0.35)]"
+                    : active
+                      ? "bg-brand-100 text-primary"
+                      : "text-[#8A9A90] hover:text-primary"
                 }`}
               >
                 <Icon className="size-[22px]" />

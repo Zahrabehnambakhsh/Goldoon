@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { HeroPlant } from "@/components/flat-art";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Camera, Send, Sparkles } from "lucide-react";
@@ -98,7 +99,7 @@ function DiagnosePage() {
       {/* Upload */}
       <label className="mb-3.5 block cursor-pointer">
         <input type="file" accept="image/*" onChange={handleFile} className="hidden" />
-        <div className="relative grid h-[230px] place-items-center overflow-hidden rounded-[30px] border-2 border-white/80 bg-[radial-gradient(80%_70%_at_50%_60%,#D7EACB_0%,#EFE8DA_70%)] shadow-soft">
+        <div className="relative grid h-[230px] place-items-center overflow-hidden rounded-[30px] hero-sand">
           {image ? (
             <img src={image} alt="گیاه" className="absolute inset-0 size-full object-cover" />
           ) : (
@@ -115,12 +116,10 @@ function DiagnosePage() {
                   آفت
                 </span>
               </div>
-              <span className="relative text-[92px] leading-none drop-shadow-[0_14px_18px_rgba(46,90,59,0.25)]">
-                🪴
-              </span>
+              <HeroPlant className="relative size-[150px]" />
             </>
           )}
-          <span className="absolute bottom-3.5 left-1/2 inline-flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full bg-night px-4 py-2 text-[13px] font-semibold text-white">
+          <span className="absolute bottom-3.5 left-1/2 inline-flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full border border-white bg-white/80 px-4 py-2 text-[13px] font-semibold text-primary backdrop-blur">
             <Camera className="size-4" />
             {image ? "عکس دیگه" : "عکس گیاه را آپلود کن"}
           </span>
@@ -143,7 +142,7 @@ function DiagnosePage() {
             className={`max-w-[82%] rounded-[20px] px-3.5 py-2.5 text-sm ${
               m.role === "user"
                 ? "self-start rounded-tr-md bg-primary text-primary-foreground"
-                : "self-end rounded-tl-md border border-[#EEE6D8] bg-white"
+                : "self-end rounded-tl-md border border-[#E3ECE4] bg-white"
             }`}
           >
             {m.image_url && <img src={m.image_url} alt="" className="mb-2 max-h-40 rounded-2xl" />}
@@ -151,7 +150,7 @@ function DiagnosePage() {
           </div>
         ))}
         {sending && (
-          <div className="self-end rounded-[20px] rounded-tl-md border border-[#EEE6D8] bg-white px-4 py-2.5 text-sm text-muted-foreground">
+          <div className="self-end rounded-[20px] rounded-tl-md border border-[#E3ECE4] bg-white px-4 py-2.5 text-sm text-muted-foreground">
             در حال فکر کردن...
           </div>
         )}
@@ -191,7 +190,7 @@ function DiagnosePage() {
           disabled={sending}
           type="submit"
           aria-label="ارسال"
-          className="grid size-[42px] shrink-0 place-items-center rounded-full bg-night text-white disabled:opacity-50"
+          className="grid size-[42px] shrink-0 place-items-center rounded-full bg-primary text-primary-foreground disabled:opacity-50"
         >
           <Send className="size-4 -scale-x-100" />
         </button>

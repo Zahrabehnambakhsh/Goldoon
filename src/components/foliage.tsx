@@ -24,7 +24,7 @@ function Leaf({
       />
       <path
         d={`M0 0 L ${w * 0.92} 0`}
-        stroke="rgba(255,255,255,0.35)"
+        stroke="rgba(255,255,255,0.7)"
         strokeWidth="1.5"
         fill="none"
       />
@@ -61,17 +61,17 @@ export function Foliage() {
         height="330"
         className="absolute -right-10 top-[150px]"
       >
-        <Leaf x={150} y={40} w={140} rot={150} fill="#2E5A3B" op={0.95} />
-        <Leaf x={160} y={110} w={150} rot={165} fill="#3F7148" op={0.9} />
-        <Leaf x={150} y={190} w={130} rot={195} fill="#2E5A3B" op={0.85} />
-        <Leaf x={160} y={250} w={120} rot={210} fill="#5B8A55" op={0.8} />
+        <Leaf x={150} y={40} w={140} rot={150} fill="#9FD3AE" op={0.95} />
+        <Leaf x={160} y={110} w={150} rot={165} fill="#B9E2C3" op={0.9} />
+        <Leaf x={150} y={190} w={130} rot={195} fill="#9FD3AE" op={0.85} />
+        <Leaf x={160} y={250} w={120} rot={210} fill="#CFEBD6" op={0.8} />
         <Flower x={40} y={270} r={6} color="#A99AE0" />
         <Flower x={70} y={300} r={5} color="#ffffff" />
       </svg>
       <svg viewBox="0 0 150 260" width="150" height="260" className="absolute -left-10 top-[150px]">
-        <Leaf x={0} y={40} w={130} rot={20} fill="#3F7148" op={0.9} />
-        <Leaf x={0} y={110} w={140} rot={-10} fill="#2E5A3B" op={0.95} />
-        <Leaf x={0} y={170} w={120} rot={-30} fill="#5B8A55" op={0.85} />
+        <Leaf x={0} y={40} w={130} rot={20} fill="#B9E2C3" op={0.9} />
+        <Leaf x={0} y={110} w={140} rot={-10} fill="#9FD3AE" op={0.95} />
+        <Leaf x={0} y={170} w={120} rot={-30} fill="#CFEBD6" op={0.85} />
         <Flower x={110} y={200} r={6} color="#ffffff" />
         <Flower x={90} y={230} r={5} color="#A99AE0" />
       </svg>

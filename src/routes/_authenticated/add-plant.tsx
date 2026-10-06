@@ -30,11 +30,11 @@ function AddPlantPage() {
       <h1 className="mb-3.5 text-2xl font-extrabold">افزودن گیاه</h1>
 
       <PlantForm
-        submitLabel="افزودن گیاه 🌱"
+        submitLabel="افزودن گیاه"
         onSubmit={async (values) => {
           await createFn({ data: values });
           qc.invalidateQueries({ queryKey: ["plants"] });
-          toast.success("گیاه اضافه شد 🌱");
+          toast.success("گیاه اضافه شد");
           navigate({ to: "/home" });
         }}
       />

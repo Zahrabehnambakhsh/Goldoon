@@ -53,47 +53,47 @@
 :root {
   --radius: 1rem;
 
-  /* Cream botanical palette */
-  --brand-900: #1E3D29;
-  --brand-800: #2E5A3B;
-  --brand-700: #3F7148;
-  --brand-600: #5B8A55;
-  --brand-500: #8DB585;
-  --brand-200: #C9DEC0;
-  --brand-100: #DCE8D3;
-  --brand-50:  #F1EBDF;
-  --warn: #F08A2E;
-  --warn-soft: #FBE4CB;
-  --warn-ink: #B4581A;
-  --peach: #F4E2D0;
-  --rose: #F1DCD8;
-  --lilac: #E6E0F3;
-  --hatch: #ECE6DB;
-  --night: #151515;
-  --sand-1: #DECCB2;
-  --sand-2: #C8B08E;
+  /* Light, flat botanical palette with frosted-glass surfaces */
+  --brand-900: #23573A;
+  --brand-800: #2F7A50;
+  --brand-700: #3A8A5C;
+  --brand-600: #5BA477;
+  --brand-500: #8CC79F;
+  --brand-200: #CDE8D3;
+  --brand-100: #E4F3E7;
+  --brand-50:  #F4F8F3;
+  --warn: #F2994A;
+  --warn-soft: #FDEEDF;
+  --warn-ink: #B8641F;
+  --peach: #FDEBDC;
+  --rose: #FBE7EA;
+  --lilac: #ECE9F8;
+  --hatch: #EDF2EC;
+  --night: #3A8A5C;
+  --sand-1: #EAF6EC;
+  --sand-2: #F7FBF6;
 
-  --background: #F1EBDF;
-  --foreground: #1D2620;
-  --card: #FBF8F2;
-  --card-foreground: #1D2620;
-  --popover: #FBF8F2;
-  --popover-foreground: #1D2620;
-  --primary: #2E5A3B;
+  --background: #F4F8F3;
+  --foreground: #22332A;
+  --card: #FFFFFF;
+  --card-foreground: #22332A;
+  --popover: #FFFFFF;
+  --popover-foreground: #22332A;
+  --primary: #3A8A5C;
   --primary-foreground: #ffffff;
-  --secondary: #DCE8D3;
-  --secondary-foreground: #1E3D29;
-  --muted: #ECE6DB;
-  --muted-foreground: #7C8077;
-  --accent: #DCE8D3;
-  --accent-foreground: #1E3D29;
-  --destructive: #C2412D;
+  --secondary: #E4F3E7;
+  --secondary-foreground: #23573A;
+  --muted: #EDF2EC;
+  --muted-foreground: #7E8C83;
+  --accent: #E4F3E7;
+  --accent-foreground: #23573A;
+  --destructive: #D9534F;
   --destructive-foreground: #ffffff;
-  --border: #E6DECF;
-  --input: #E6DECF;
-  --ring: #2E5A3B;
+  --border: #E3ECE4;
+  --input: #E3ECE4;
+  --ring: #3A8A5C;
 
-  --shadow-soft: 0 10px 30px rgba(84, 68, 40, 0.10), 0 2px 6px rgba(84, 68, 40, 0.05);
+  --shadow-soft: 0 6px 24px rgba(46, 90, 64, 0.07);
 }
 
 html {
@@ -103,7 +103,8 @@ html {
 body {
   font-family: var(--font-sans);
   background:
-    radial-gradient(120% 60% at 50% 0%, #F7F2E9 0%, var(--background) 55%, #E9E1D2 100%) fixed,
+    radial-gradient(90% 50% at 85% 0%, #E2F3E6 0%, transparent 60%) fixed,
+    radial-gradient(80% 50% at 0% 100%, #EEF0FA 0%, transparent 60%) fixed,
     var(--background);
   color: var(--foreground);
   font-feature-settings: "ss01";
@@ -119,31 +120,34 @@ body {
   box-shadow: var(--shadow-soft);
 }
 
-/* Frosted cream card used across the app */
+/* Frosted glass card used across the app */
 @utility glass-card {
-  background: rgba(252, 249, 243, 0.88);
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid rgba(255, 255, 255, 0.95);
   box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
 }
 
-/* Warm sand hero panel behind the foliage illustration */
+/* Light mint hero panel behind the foliage illustration */
 @utility hero-sand {
-  background: linear-gradient(170deg, var(--sand-1), var(--sand-2));
-  border: 2px solid rgba(255, 255, 255, 0.7);
+  background: linear-gradient(165deg, var(--sand-1), var(--sand-2));
+  border: 1px solid rgba(255, 255, 255, 0.95);
   box-shadow: var(--shadow-soft);
 }
 
 /* Hatched fill for planned (future) bars */
 @utility hatch {
-  background: repeating-linear-gradient(135deg, var(--hatch) 0 5px, #F7F3EC 5px 10px);
-  border: 1px solid #E4DCCD;
+  background: repeating-linear-gradient(135deg, var(--hatch) 0 5px, #F8FBF7 5px 10px);
+  border: 1px solid #E3ECE4;
 }
 
 @utility glass-nav {
-  background: var(--night);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.25);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 8px 30px rgba(46, 90, 64, 0.12);
+  backdrop-filter: blur(20px) saturate(170%);
+  -webkit-backdrop-filter: blur(20px) saturate(170%);
 }
 
 @utility fa-num {

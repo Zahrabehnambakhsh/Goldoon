@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
-import { LogOut, User as UserIcon, Bell } from "lucide-react";
+import { LogOut, User as UserIcon, Bell, Sprout, Droplet, CalendarDays, Flame } from "lucide-react";
 import { listPlants, getProfile, getWateringStats } from "@/lib/plants.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toFa, daysBetween, wateringStreak, addressName } from "@/lib/fa";
@@ -77,7 +77,7 @@ function ProfilePage() {
       </header>
 
       <div className="glass-card mb-3.5 flex items-center gap-3.5 rounded-[30px] p-4">
-        <div className="grid size-16 shrink-0 place-items-center rounded-[22px] border-2 border-white bg-gradient-to-br from-[#F5D9B8] to-[#E9BE95] text-[26px] font-extrabold text-[#6B3B12] shadow-soft">
+        <div className="grid size-16 shrink-0 place-items-center rounded-[22px] border-2 border-white bg-gradient-to-br from-[#E4F3E7] to-[#CDE8D3] text-[26px] font-extrabold text-[#23573A] shadow-soft">
           {initial}
         </div>
         <div className="min-w-0">
@@ -94,7 +94,7 @@ function ProfilePage() {
       <div className="mb-3.5 grid grid-cols-2 gap-3">
         <Tile
           tone="mint"
-          icon="🪴"
+          icon={<Sprout className="size-5" />}
           title="تعداد گیاه"
           value={toFa(plants.length)}
           unit="گیاه"
@@ -102,7 +102,7 @@ function ProfilePage() {
         />
         <Tile
           tone="peach"
-          icon="💧"
+          icon={<Droplet className="size-5 text-warn-ink" />}
           title="آبیاری‌ها"
           value={toFa(wateringsDone)}
           unit="بار"
@@ -110,7 +110,7 @@ function ProfilePage() {
         />
         <Tile
           tone="rose"
-          icon="📅"
+          icon={<CalendarDays className="size-5 text-[#C2566B]" />}
           title="روز استفاده"
           value={toFa(daysUsing)}
           unit="روز"
@@ -118,7 +118,7 @@ function ProfilePage() {
         />
         <Tile
           tone="cream"
-          icon="🔥"
+          icon={<Flame className="size-5 text-warn" />}
           title="پشت‌سرهم"
           value={toFa(streak)}
           unit="روز"
@@ -163,7 +163,7 @@ function Tile({
   highlight,
 }: {
   tone: "mint" | "peach" | "rose" | "cream";
-  icon: string;
+  icon: React.ReactNode;
   title: string;
   value: string;
   unit: string;
@@ -174,7 +174,7 @@ function Tile({
     <div
       className={`glass-card flex flex-col gap-3.5 rounded-3xl p-3.5 ${
         highlight
-          ? "!border-[1.5px] !border-[#CBB79A] !bg-gradient-to-br from-[#FBF1E2] to-card"
+          ? "!border-[1.5px] !border-[#BFE0C9] !bg-gradient-to-br from-[#EEF7F0] to-card"
           : ""
       }`}
     >

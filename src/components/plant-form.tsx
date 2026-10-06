@@ -126,7 +126,7 @@ export function PlantForm({
             <>
               <Foliage />
               <div className="relative flex flex-col items-center gap-2.5">
-                <div className="grid size-[50px] place-items-center rounded-full bg-night text-white">
+                <div className="grid size-[50px] place-items-center rounded-full bg-white/80 text-primary shadow-soft">
                   <Camera className="size-5" />
                 </div>
                 <p className="text-sm font-semibold">عکس گیاه را اضافه کنید</p>
@@ -208,14 +208,14 @@ export function PlantForm({
           type="button"
           onClick={handleSuggest}
           disabled={suggesting}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-night py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-brand-100 py-2.5 text-[13px] font-semibold text-primary disabled:opacity-60"
         >
-          <Sparkles className="size-4 text-[#F6C66B]" />
+          <Sparkles className="size-4" />
           {suggesting ? "در حال دریافت پیشنهاد..." : "پیشنهاد هوش مصنوعی"}
         </button>
         {suggestReason && (
           <p className="mt-2.5 flex gap-2 rounded-2xl bg-brand-100 px-3 py-2.5 text-xs leading-relaxed">
-            <span>✨</span>
+            <Sparkles className="mt-1 size-3.5 shrink-0 text-primary" />
             <span>{suggestReason}</span>
           </p>
         )}

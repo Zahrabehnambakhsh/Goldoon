@@ -1,4 +1,5 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { HeroPlant } from "@/components/flat-art";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -27,7 +28,7 @@ type Method = "email" | "phone";
 type View = "form" | "forgot" | "check-email";
 
 const INPUT =
-  "h-[52px] w-full rounded-2xl border border-transparent bg-[#F5F0E6] px-4 text-[15px] outline-none transition placeholder:text-[#A9A79E] focus:border-primary/40 focus:bg-white focus:ring-4 focus:ring-primary/10";
+  "h-[52px] w-full rounded-2xl border border-transparent bg-[#EFF5F0] px-4 text-[15px] outline-none transition placeholder:text-[#98A69D] focus:border-primary/40 focus:bg-white focus:ring-4 focus:ring-primary/10";
 const PRIMARY =
   "flex h-[54px] w-full items-center justify-center gap-2 rounded-full bg-primary text-[15px] font-semibold text-primary-foreground shadow-[0_10px_24px_rgba(46,90,59,0.28)] transition hover:bg-brand-900 active:scale-[0.99] disabled:opacity-60";
 
@@ -208,7 +209,7 @@ function AuthPage() {
         ? "ایمیلت رو چک کن"
         : mode === "register"
           ? "ساخت حساب تازه"
-          : "خوش اومدی 👋";
+          : "خوش اومدی";
   const subtitle =
     view === "forgot"
       ? "ایمیل حسابت رو بزن تا لینک ساختن رمز جدید برات بیاد."
@@ -223,28 +224,23 @@ function AuthPage() {
       {/* Hero */}
       <section className="hero-sand relative h-[42vh] min-h-[280px] max-h-[380px] overflow-hidden rounded-b-[40px] border-x-0 border-t-0">
         <Foliage />
-        <div className="absolute right-5 top-5 flex items-center gap-2 rounded-full bg-[#FCF6EC]/90 py-1.5 pe-4 ps-1.5 shadow-soft">
-          <span className="grid size-8 place-items-center rounded-full bg-night text-white">
+        <div className="absolute right-5 top-5 flex items-center gap-2 rounded-full border border-white bg-white/70 py-1.5 pe-4 ps-1.5 backdrop-blur">
+          <span className="grid size-8 place-items-center rounded-full bg-brand-100 text-primary">
             <Leaf className="size-4" />
           </span>
           <span className="text-sm font-extrabold">Goldoon</span>
         </div>
         <div
           aria-hidden="true"
-          className="absolute left-1/2 top-[52%] size-44 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#FCF6EC]/45 blur-2xl"
+          className="absolute left-1/2 top-[54%] size-44 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/50 blur-2xl"
         />
-        <span
-          aria-hidden="true"
-          className="absolute left-1/2 top-[52%] -translate-x-1/2 -translate-y-1/2 text-[120px] leading-none drop-shadow-[0_18px_20px_rgba(60,40,10,0.28)]"
-        >
-          🪴
-        </span>
+        <HeroPlant className="absolute left-1/2 top-[54%] size-[170px] -translate-x-1/2 -translate-y-1/2" />
       </section>
 
       {/* Sheet */}
-      <div className="relative z-10 -mt-8 flex-1 rounded-t-[36px] bg-card px-5 pb-10 pt-7 shadow-[0_-12px_30px_rgba(84,68,40,0.08)]">
+      <div className="relative z-10 -mt-8 flex-1 rounded-t-[36px] bg-card px-5 pb-10 pt-7 shadow-[0_-10px_30px_rgba(46,90,64,0.06)]">
         <span
-          className="mx-auto mb-5 block h-1.5 w-10 rounded-full bg-[#E6DECF]"
+          className="mx-auto mb-5 block h-1.5 w-10 rounded-full bg-[#DCE8DE]"
           aria-hidden="true"
         />
         <h1 className="text-[26px] font-extrabold leading-tight">{title}</h1>
@@ -306,7 +302,7 @@ function AuthPage() {
                     type="button"
                     onClick={signInWithGoogle}
                     disabled={loading}
-                    className="mb-3.5 flex w-full items-center justify-center gap-2.5 rounded-full border border-input bg-white py-3 text-sm font-semibold transition hover:bg-[#FAF7F1] disabled:opacity-60"
+                    className="mb-3.5 flex w-full items-center justify-center gap-2.5 rounded-full border border-input bg-white py-3 text-sm font-semibold transition hover:bg-[#F4F8F3] disabled:opacity-60"
                   >
                     <GoogleIcon />
                     ادامه با گوگل
@@ -318,7 +314,7 @@ function AuthPage() {
                     <span className="h-px flex-1 bg-input" />
                   </div>
 
-                  <div className="mb-3.5 grid grid-cols-2 gap-1 rounded-2xl bg-[#F1EADC] p-1">
+                  <div className="mb-3.5 grid grid-cols-2 gap-1 rounded-2xl bg-[#EAF2EB] p-1">
                     {(
                       [
                         ["email", "ایمیل", Mail],
@@ -376,7 +372,7 @@ function AuthPage() {
 
                   <Field label="ایمیل">
                     <div className="relative">
-                      <Mail className="pointer-events-none absolute right-4 top-1/2 size-[18px] -translate-y-1/2 text-[#A9A79E]" />
+                      <Mail className="pointer-events-none absolute right-4 top-1/2 size-[18px] -translate-y-1/2 text-[#98A69D]" />
                       <input
                         required
                         type="email"
@@ -515,7 +511,7 @@ function PasswordInput({
   const [show, setShow] = useState(false);
   return (
     <div className="relative">
-      <Lock className="pointer-events-none absolute right-4 top-1/2 size-[18px] -translate-y-1/2 text-[#A9A79E]" />
+      <Lock className="pointer-events-none absolute right-4 top-1/2 size-[18px] -translate-y-1/2 text-[#98A69D]" />
       <input
         required
         minLength={6}
@@ -531,7 +527,7 @@ function PasswordInput({
         type="button"
         onClick={() => setShow((v) => !v)}
         aria-label={show ? "پنهان کردن رمز" : "نمایش رمز"}
-        className="absolute left-3 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-full text-[#8E8B82] hover:bg-black/5"
+        className="absolute left-3 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-full text-[#8A9A90] hover:bg-black/5"
       >
         {show ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
       </button>

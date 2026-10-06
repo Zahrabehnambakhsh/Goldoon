@@ -26,7 +26,7 @@ function birthdayDiscount(birthDate: string | null | undefined): {
   const daysUntil = Math.round(
     (next.getTime() - Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())) / ms,
   );
-  if (daysUntil === 0) return { percent: 40, daysUntil, tier: "روز تولد 🎉" };
+  if (daysUntil === 0) return { percent: 40, daysUntil, tier: "روز تولد" };
   if (daysUntil <= 7) return { percent: 25, daysUntil, tier: "هفته تولد" };
   if (daysUntil <= 30) return { percent: 15, daysUntil, tier: "ماه تولد" };
   return { percent: 10, daysUntil, tier: "پایه (وفاداری)" };
@@ -108,8 +108,7 @@ function AccountPage() {
       <h1 className="mb-3.5 text-2xl font-extrabold">اطلاعات حساب</h1>
 
       <p className="mb-3.5 rounded-3xl bg-brand-100 p-3.5 text-xs leading-6">
-        این اطلاعات برای شخصی‌سازی تجربه شماست. در آینده روی تاریخ تولد شما تخفیف تولد فعال می‌شود
-        🎁
+        این اطلاعات برای شخصی‌سازی تجربه شماست. در آینده روی تاریخ تولد شما تخفیف تولد فعال می‌شود.
       </p>
 
       <div className="glass-card mb-3.5 overflow-hidden rounded-[30px] p-4">
@@ -123,7 +122,7 @@ function AccountPage() {
           </div>
         </div>
 
-        <div className="flex items-end justify-between rounded-3xl bg-gradient-to-br from-[#FBF1E2] to-card p-3.5">
+        <div className="flex items-end justify-between rounded-3xl bg-gradient-to-br from-[#EEF7F0] to-card p-3.5">
           <div>
             <p className="text-[11px] text-muted-foreground">تخفیف فعلی شما</p>
             <p className="text-3xl font-extrabold text-primary fa-num leading-tight">
@@ -137,7 +136,7 @@ function AccountPage() {
             {discount.daysUntil === null ? (
               <p className="text-[11px] text-muted-foreground">تاریخ تولد را وارد کنید</p>
             ) : discount.daysUntil === 0 ? (
-              <p className="text-xs font-bold text-primary">امروز تولدتونه! 🎂</p>
+              <p className="text-xs font-bold text-primary">امروز تولدتونه!</p>
             ) : (
               <p className="text-[11px] text-primary/80">
                 <span className="fa-num font-bold text-primary">{toFa(discount.daysUntil)}</span>{" "}
@@ -149,16 +148,16 @@ function AccountPage() {
 
         <ul className="mt-3 space-y-1 text-[11px] text-primary/80">
           <li>
-            🎉 روز تولد: <span className="fa-num font-bold">۴۰٪</span>
+            روز تولد: <span className="fa-num font-bold">۴۰٪</span>
           </li>
           <li>
-            🎁 هفته تولد (۷ روز): <span className="fa-num font-bold">۲۵٪</span>
+            هفته تولد (۷ روز): <span className="fa-num font-bold">۲۵٪</span>
           </li>
           <li>
-            🌱 ماه تولد (۳۰ روز): <span className="fa-num font-bold">۱۵٪</span>
+            ماه تولد (۳۰ روز): <span className="fa-num font-bold">۱۵٪</span>
           </li>
           <li>
-            💚 بقیه سال: <span className="fa-num font-bold">۱۰٪</span> پایه وفاداری
+            بقیه سال: <span className="fa-num font-bold">۱۰٪</span> پایه وفاداری
           </li>
         </ul>
       </div>

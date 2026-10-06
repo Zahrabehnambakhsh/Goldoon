@@ -54,11 +54,11 @@ function NotificationsPage() {
       return;
     }
     update({ ...settings, enabled: true });
-    toast.success("یادآور روشن شد 🔔");
+    toast.success("یادآور روشن شد");
   };
 
   const test = async () => {
-    const ok = await showNotification("Goldoon 🌿", "اعلان‌ها درست کار می‌کنن!");
+    const ok = await showNotification("Goldoon", "اعلان‌ها درست کار می‌کنن!");
     if (!ok) toast.error("اول یادآور رو روشن کن");
   };
 

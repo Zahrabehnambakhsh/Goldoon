@@ -1,4 +1,5 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { HeroPlant } from "@/components/flat-art";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -49,7 +50,7 @@ function WelcomePage() {
         old ? { ...old, display_name: value } : old,
       );
       qc.invalidateQueries({ queryKey: ["profile"] });
-      toast.success(`خوش اومدی ${value} 🌿`);
+      toast.success(`خوش اومدی ${value}`);
       navigate({ to: "/home", replace: true });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "خطا در ذخیره");
@@ -61,26 +62,21 @@ function WelcomePage() {
     <div className="flex min-h-screen flex-col">
       <section className="hero-sand relative h-[38vh] min-h-[250px] max-h-[340px] overflow-hidden rounded-b-[40px] border-x-0 border-t-0">
         <Foliage />
-        <div className="absolute right-5 top-5 flex items-center gap-2 rounded-full bg-[#FCF6EC]/90 py-1.5 pe-4 ps-1.5 shadow-soft">
-          <span className="grid size-8 place-items-center rounded-full bg-night text-white">
+        <div className="absolute right-5 top-5 flex items-center gap-2 rounded-full border border-white bg-white/70 py-1.5 pe-4 ps-1.5 backdrop-blur">
+          <span className="grid size-8 place-items-center rounded-full bg-brand-100 text-primary">
             <Leaf className="size-4" />
           </span>
           <span className="text-sm font-extrabold">Goldoon</span>
         </div>
-        <span
-          aria-hidden="true"
-          className="absolute left-1/2 top-[54%] -translate-x-1/2 -translate-y-1/2 text-[110px] leading-none drop-shadow-[0_18px_20px_rgba(60,40,10,0.28)]"
-        >
-          👋
-        </span>
+        <HeroPlant className="absolute left-1/2 top-[56%] size-[150px] -translate-x-1/2 -translate-y-1/2" />
       </section>
 
       <form
         onSubmit={save}
-        className="relative z-10 -mt-8 flex-1 rounded-t-[36px] bg-card px-5 pb-10 pt-7 shadow-[0_-12px_30px_rgba(84,68,40,0.08)]"
+        className="relative z-10 -mt-8 flex-1 rounded-t-[36px] bg-card px-5 pb-10 pt-7 shadow-[0_-10px_30px_rgba(46,90,64,0.06)]"
       >
         <span
-          className="mx-auto mb-5 block h-1.5 w-10 rounded-full bg-[#E6DECF]"
+          className="mx-auto mb-5 block h-1.5 w-10 rounded-full bg-[#DCE8DE]"
           aria-hidden="true"
         />
         <h1 className="text-[26px] font-extrabold leading-tight">به چه اسمی صدات کنیم؟</h1>
@@ -97,7 +93,7 @@ function WelcomePage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="مثلاً زهرا"
-            className="h-[56px] w-full rounded-2xl border border-transparent bg-[#F5F0E6] px-4 text-lg font-semibold outline-none transition placeholder:font-normal placeholder:text-[#A9A79E] focus:border-primary/40 focus:bg-white focus:ring-4 focus:ring-primary/10"
+            className="h-[56px] w-full rounded-2xl border border-transparent bg-[#EFF5F0] px-4 text-lg font-semibold outline-none transition placeholder:font-normal placeholder:text-[#98A69D] focus:border-primary/40 focus:bg-white focus:ring-4 focus:ring-primary/10"
           />
         </label>
 

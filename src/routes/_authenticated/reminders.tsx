@@ -1,11 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Droplet } from "lucide-react";
+import { Droplet, CalendarDays } from "lucide-react";
 import { BackButton, BigStat, IconBubble, Segmented } from "@/components/garden-ui";
 import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listPlants, waterPlant } from "@/lib/plants.functions";
-import { toFa, daysBetween, plantEmoji } from "@/lib/fa";
+import { toFa, daysBetween } from "@/lib/fa";
+import { PlantIcon } from "@/components/flat-art";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/reminders")({
@@ -49,7 +50,7 @@ function Reminders() {
     try {
       await waterFn({ data: { id } });
       qc.invalidateQueries({ queryKey: ["plants"] });
-      toast.success("آبیاری ثبت شد 💧");
+      toast.success("آبیاری ثبت شد");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "خطا");
     }
@@ -73,14 +74,18 @@ function Reminders() {
       <div className="mb-3.5 grid grid-cols-2 gap-3">
         <div className="glass-card flex flex-col gap-3.5 rounded-3xl p-3.5">
           <div className="flex items-center gap-2 text-[13px] font-semibold">
-            <IconBubble tone="peach">💧</IconBubble>
+            <IconBubble tone="peach">
+              <Droplet className="size-5 text-warn-ink" />
+            </IconBubble>
             امروز
           </div>
           <BigStat value={toFa(dueToday.length)} unit="گیاه" label="باید آب بخورن" />
         </div>
         <div className="glass-card flex flex-col gap-3.5 rounded-3xl p-3.5">
           <div className="flex items-center gap-2 text-[13px] font-semibold">
-            <IconBubble tone="mint">🗓️</IconBubble>
+            <IconBubble tone="mint">
+              <CalendarDays className="size-5" />
+            </IconBubble>
             هفته آینده
           </div>
           <BigStat value={toFa(upcoming.length)} unit="گیاه" label="در برنامه" />
@@ -90,18 +95,18 @@ function Reminders() {
       {tab === "day" ? (
         dueToday.length === 0 ? (
           <div className="glass-card rounded-3xl p-6 text-center text-sm">
-            امروز آبیاری‌ای نداری! 🎉
+            امروز آبیاری‌ای نداری!
           </div>
         ) : (
           <div className="space-y-3">
             {dueToday.map((p) => (
               <div key={p.id} className="glass-card flex items-center gap-3 rounded-3xl p-3">
                 <span
-                  className={`grid size-12 shrink-0 place-items-center rounded-full text-[22px] ${
+                  className={`grid size-12 shrink-0 place-items-center rounded-full ${
                     p.daysLeft < 0 ? "bg-peach" : "bg-brand-100"
                   }`}
                 >
-                  {plantEmoji(p.type)}
+                  <PlantIcon type={p.type} className="size-8" />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[15px] font-bold">{p.name}</p>
@@ -143,7 +148,7 @@ function Reminders() {
                   key={p.id}
                   className={`flex items-center gap-2.5 py-2 ${idx ? "border-t border-dashed border-input" : "pt-0"}`}
                 >
-                  <span className="text-lg">{plantEmoji(p.type)}</span>
+                  <PlantIcon type={p.type} className="size-6" />
                   <p className="flex-1 truncate text-sm font-semibold">{p.name}</p>
                   <span className="rounded-full bg-brand-100 px-2.5 py-0.5 text-[11px] font-medium fa-num">
                     هر {toFa(p.watering_interval_days)} روز
