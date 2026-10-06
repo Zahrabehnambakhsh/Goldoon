@@ -33,3 +33,7 @@ dist-ssr
 
 # Secrets
 .env
+
+# Invited-user lists (contain passwords)
+users*.csv
+scripts/*.csv

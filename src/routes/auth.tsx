@@ -6,6 +6,7 @@ import { Leaf, Mail, Smartphone, ArrowRight } from "lucide-react";
 import { Foliage } from "@/components/foliage";
 import { normalizeIranMobile, toEnglishDigits, toLocalMobile } from "@/lib/phone";
 import { toFa } from "@/lib/fa";
+import { getPublicEnv } from "@/lib/public-env";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -53,6 +54,7 @@ function faError(err: unknown): string {
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { signupOpen } = getPublicEnv();
   const [method, setMethod] = useState<Method>("email");
   const [view, setView] = useState<View>("form");
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -259,61 +261,71 @@ function AuthPage() {
           </form>
         ) : (
           <>
-            <button
-              type="button"
-              onClick={signInWithGoogle}
-              disabled={loading}
-              className="mb-3.5 flex w-full items-center justify-center gap-2.5 rounded-full border border-input bg-white py-3 text-sm font-semibold transition hover:bg-[#FAF7F1] disabled:opacity-60"
-            >
-              <GoogleIcon />
-              ادامه با گوگل
-            </button>
-
-            <div className="mb-3.5 flex items-center gap-3 text-[11px] text-muted-foreground">
-              <span className="h-px flex-1 bg-input" />
-              یا
-              <span className="h-px flex-1 bg-input" />
-            </div>
-
-            <div className="mb-3.5 grid grid-cols-2 gap-1 rounded-2xl bg-[#F1EADC] p-1">
-              {(
-                [
-                  ["email", "ایمیل", Mail],
-                  ["phone", "موبایل", Smartphone],
-                ] as const
-              ).map(([m, label, Icon]) => (
+            {signupOpen ? (
+              <>
                 <button
-                  key={m}
                   type="button"
-                  onClick={() => setMethod(m)}
-                  className={`flex items-center justify-center gap-1.5 rounded-xl py-2 text-[13px] font-semibold transition ${
-                    method === m ? "bg-primary text-primary-foreground" : "text-foreground"
-                  }`}
+                  onClick={signInWithGoogle}
+                  disabled={loading}
+                  className="mb-3.5 flex w-full items-center justify-center gap-2.5 rounded-full border border-input bg-white py-3 text-sm font-semibold transition hover:bg-[#FAF7F1] disabled:opacity-60"
                 >
-                  <Icon className="size-4" />
-                  {label}
+                  <GoogleIcon />
+                  ادامه با گوگل
                 </button>
-              ))}
-            </div>
 
-            {method === "email" ? (
-              <form onSubmit={handleEmailSubmit} className="space-y-3.5">
-                <div className="flex gap-4 text-[13px] font-semibold">
-                  {(["login", "register"] as const).map((m) => (
+                <div className="mb-3.5 flex items-center gap-3 text-[11px] text-muted-foreground">
+                  <span className="h-px flex-1 bg-input" />
+                  یا
+                  <span className="h-px flex-1 bg-input" />
+                </div>
+
+                <div className="mb-3.5 grid grid-cols-2 gap-1 rounded-2xl bg-[#F1EADC] p-1">
+                  {(
+                    [
+                      ["email", "ایمیل", Mail],
+                      ["phone", "موبایل", Smartphone],
+                    ] as const
+                  ).map(([m, label, Icon]) => (
                     <button
                       key={m}
                       type="button"
-                      onClick={() => setMode(m)}
-                      className={`border-b-2 pb-1 transition ${
-                        mode === m
-                          ? "border-primary text-foreground"
-                          : "border-transparent text-muted-foreground"
+                      onClick={() => setMethod(m)}
+                      className={`flex items-center justify-center gap-1.5 rounded-xl py-2 text-[13px] font-semibold transition ${
+                        method === m ? "bg-primary text-primary-foreground" : "text-foreground"
                       }`}
                     >
-                      {m === "login" ? "ورود" : "ثبت‌نام"}
+                      <Icon className="size-4" />
+                      {label}
                     </button>
                   ))}
                 </div>
+              </>
+            ) : (
+              <p className="mb-3.5 rounded-2xl bg-brand-100 p-3 text-xs leading-6">
+                ثبت‌نام فعلاً بسته است و فقط کاربرانی که حساب براشون ساخته شده می‌تونن وارد بشن.
+              </p>
+            )}
+
+            {method === "email" ? (
+              <form onSubmit={handleEmailSubmit} className="space-y-3.5">
+                {signupOpen && (
+                  <div className="flex gap-4 text-[13px] font-semibold">
+                    {(["login", "register"] as const).map((m) => (
+                      <button
+                        key={m}
+                        type="button"
+                        onClick={() => setMode(m)}
+                        className={`border-b-2 pb-1 transition ${
+                          mode === m
+                            ? "border-primary text-foreground"
+                            : "border-transparent text-muted-foreground"
+                        }`}
+                      >
+                        {m === "login" ? "ورود" : "ثبت‌نام"}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
                 {mode === "register" && (
                   <Field label="نام">
