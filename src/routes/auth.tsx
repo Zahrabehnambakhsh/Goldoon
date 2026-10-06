@@ -2,7 +2,7 @@ import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Leaf, Mail, Smartphone, ArrowRight } from "lucide-react";
+import { Leaf, Mail, Smartphone, ArrowRight, ArrowLeft, Lock, Eye, EyeOff } from "lucide-react";
 import { Foliage } from "@/components/foliage";
 import { normalizeIranMobile, toEnglishDigits, toLocalMobile } from "@/lib/phone";
 import { toFa } from "@/lib/fa";
@@ -27,9 +27,9 @@ type Method = "email" | "phone";
 type View = "form" | "forgot" | "check-email";
 
 const INPUT =
-  "w-full rounded-2xl border border-input bg-white px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary";
+  "h-[52px] w-full rounded-2xl border border-transparent bg-[#F5F0E6] px-4 text-[15px] outline-none transition placeholder:text-[#A9A79E] focus:border-primary/40 focus:bg-white focus:ring-4 focus:ring-primary/10";
 const PRIMARY =
-  "w-full rounded-full bg-primary py-[15px] text-[15px] font-semibold text-primary-foreground shadow-soft transition hover:bg-brand-900 disabled:opacity-60";
+  "flex h-[54px] w-full items-center justify-center gap-2 rounded-full bg-primary text-[15px] font-semibold text-primary-foreground shadow-[0_10px_24px_rgba(46,90,59,0.28)] transition hover:bg-brand-900 active:scale-[0.99] disabled:opacity-60";
 
 /** Supabase error messages → Persian. */
 function faError(err: unknown): string {
@@ -201,265 +201,340 @@ function AuthPage() {
     }
   };
 
+  const title =
+    view === "forgot"
+      ? "فراموشی رمز عبور"
+      : view === "check-email"
+        ? "ایمیلت رو چک کن"
+        : mode === "register"
+          ? "ساخت حساب تازه"
+          : "خوش اومدی 👋";
+  const subtitle =
+    view === "forgot"
+      ? "ایمیل حسابت رو بزن تا لینک ساختن رمز جدید برات بیاد."
+      : view === "check-email"
+        ? ""
+        : mode === "register"
+          ? "چند ثانیه‌ست؛ بعدش گیاه‌هات رو اضافه کن."
+          : "وارد شو تا ببینی امروز کدوم گیاه‌ها تشنه‌ان.";
+
   return (
-    <div className="flex min-h-screen flex-col gap-3.5 px-4 py-6">
-      <section className="hero-sand relative flex min-h-[260px] flex-col overflow-hidden rounded-[34px] px-5 pt-[22px]">
+    <div className="flex min-h-screen flex-col">
+      {/* Hero */}
+      <section className="hero-sand relative h-[42vh] min-h-[280px] max-h-[380px] overflow-hidden rounded-b-[40px] border-x-0 border-t-0">
         <Foliage />
-        <div className="relative mb-3.5 grid size-14 place-items-center rounded-[18px] bg-night text-white">
-          <Leaf className="size-7" />
+        <div className="absolute right-5 top-5 flex items-center gap-2 rounded-full bg-[#FCF6EC]/90 py-1.5 pe-4 ps-1.5 shadow-soft">
+          <span className="grid size-8 place-items-center rounded-full bg-night text-white">
+            <Leaf className="size-4" />
+          </span>
+          <span className="text-sm font-extrabold">Goldoon</span>
         </div>
-        <h1 className="relative text-[34px] font-extrabold leading-tight">Goldoon</h1>
-        <p className="relative mt-1 text-[15px]">گیاهانت رو هوشمند نگه‌دار</p>
+        <div
+          aria-hidden="true"
+          className="absolute left-1/2 top-[52%] size-44 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#FCF6EC]/45 blur-2xl"
+        />
+        <span
+          aria-hidden="true"
+          className="absolute left-1/2 top-[52%] -translate-x-1/2 -translate-y-1/2 text-[120px] leading-none drop-shadow-[0_18px_20px_rgba(60,40,10,0.28)]"
+        >
+          🪴
+        </span>
       </section>
 
-      <div className="glass-card rounded-[30px] p-[18px]">
-        {view === "check-email" ? (
-          <div className="space-y-4 text-center">
-            <span className="mx-auto grid size-14 place-items-center rounded-full bg-brand-100 text-primary">
-              <Mail className="size-6" />
-            </span>
-            <p className="text-sm leading-7">{checkEmailText}</p>
-            <button
-              type="button"
-              onClick={() => {
-                setView("form");
-                setMode("login");
-              }}
-              className={PRIMARY}
-            >
-              برگشت به ورود
-            </button>
-          </div>
-        ) : view === "forgot" ? (
-          <form onSubmit={sendReset} className="space-y-3.5">
-            <button
-              type="button"
-              onClick={() => setView("form")}
-              className="flex items-center gap-1 text-[13px] font-semibold text-muted-foreground"
-            >
-              <ArrowRight className="size-4" />
-              برگشت
-            </button>
-            <h2 className="text-lg font-extrabold">فراموشی رمز عبور</h2>
-            <p className="text-xs leading-6 text-muted-foreground">
-              ایمیل حسابت رو وارد کن تا لینک ساختن رمز جدید رو برات بفرستیم.
-            </p>
-            <Field label="ایمیل">
-              <input
-                required
-                type="email"
-                dir="ltr"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={INPUT}
-                placeholder="you@example.com"
-              />
-            </Field>
-            <button disabled={loading} type="submit" className={PRIMARY}>
-              {loading ? "در حال ارسال..." : "ارسال لینک"}
-            </button>
-          </form>
-        ) : (
-          <>
-            {signupOpen ? (
-              <>
-                <button
-                  type="button"
-                  onClick={signInWithGoogle}
-                  disabled={loading}
-                  className="mb-3.5 flex w-full items-center justify-center gap-2.5 rounded-full border border-input bg-white py-3 text-sm font-semibold transition hover:bg-[#FAF7F1] disabled:opacity-60"
-                >
-                  <GoogleIcon />
-                  ادامه با گوگل
-                </button>
+      {/* Sheet */}
+      <div className="relative z-10 -mt-8 flex-1 rounded-t-[36px] bg-card px-5 pb-10 pt-7 shadow-[0_-12px_30px_rgba(84,68,40,0.08)]">
+        <span
+          className="mx-auto mb-5 block h-1.5 w-10 rounded-full bg-[#E6DECF]"
+          aria-hidden="true"
+        />
+        <h1 className="text-[26px] font-extrabold leading-tight">{title}</h1>
+        {subtitle && <p className="mt-1.5 text-sm leading-6 text-muted-foreground">{subtitle}</p>}
+        {!signupOpen && view === "form" && (
+          <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-brand-100 px-3 py-1 text-[11px] font-semibold text-primary">
+            <Lock className="size-3" />
+            فعلاً فقط برای کاربران دعوت‌شده
+          </p>
+        )}
+        <div className="mt-6">
+          {view === "check-email" ? (
+            <div className="space-y-4 text-center">
+              <span className="mx-auto grid size-14 place-items-center rounded-full bg-brand-100 text-primary">
+                <Mail className="size-6" />
+              </span>
+              <p className="text-sm leading-7">{checkEmailText}</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setView("form");
+                  setMode("login");
+                }}
+                className={PRIMARY}
+              >
+                برگشت به ورود
+              </button>
+            </div>
+          ) : view === "forgot" ? (
+            <form onSubmit={sendReset} className="space-y-3.5">
+              <button
+                type="button"
+                onClick={() => setView("form")}
+                className="flex items-center gap-1 text-[13px] font-semibold text-muted-foreground"
+              >
+                <ArrowRight className="size-4" />
+                برگشت
+              </button>
+              <Field label="ایمیل">
+                <input
+                  required
+                  type="email"
+                  dir="ltr"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={INPUT}
+                  placeholder="you@example.com"
+                />
+              </Field>
+              <button disabled={loading} type="submit" className={PRIMARY}>
+                {loading ? "در حال ارسال..." : "ارسال لینک"}
+              </button>
+            </form>
+          ) : (
+            <>
+              {signupOpen ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={signInWithGoogle}
+                    disabled={loading}
+                    className="mb-3.5 flex w-full items-center justify-center gap-2.5 rounded-full border border-input bg-white py-3 text-sm font-semibold transition hover:bg-[#FAF7F1] disabled:opacity-60"
+                  >
+                    <GoogleIcon />
+                    ادامه با گوگل
+                  </button>
 
-                <div className="mb-3.5 flex items-center gap-3 text-[11px] text-muted-foreground">
-                  <span className="h-px flex-1 bg-input" />
-                  یا
-                  <span className="h-px flex-1 bg-input" />
-                </div>
+                  <div className="mb-3.5 flex items-center gap-3 text-[11px] text-muted-foreground">
+                    <span className="h-px flex-1 bg-input" />
+                    یا
+                    <span className="h-px flex-1 bg-input" />
+                  </div>
 
-                <div className="mb-3.5 grid grid-cols-2 gap-1 rounded-2xl bg-[#F1EADC] p-1">
-                  {(
-                    [
-                      ["email", "ایمیل", Mail],
-                      ["phone", "موبایل", Smartphone],
-                    ] as const
-                  ).map(([m, label, Icon]) => (
-                    <button
-                      key={m}
-                      type="button"
-                      onClick={() => setMethod(m)}
-                      className={`flex items-center justify-center gap-1.5 rounded-xl py-2 text-[13px] font-semibold transition ${
-                        method === m ? "bg-primary text-primary-foreground" : "text-foreground"
-                      }`}
-                    >
-                      <Icon className="size-4" />
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <p className="mb-3.5 rounded-2xl bg-brand-100 p-3 text-xs leading-6">
-                ثبت‌نام فعلاً بسته است و فقط کاربرانی که حساب براشون ساخته شده می‌تونن وارد بشن.
-              </p>
-            )}
-
-            {method === "email" ? (
-              <form onSubmit={handleEmailSubmit} className="space-y-3.5">
-                {signupOpen && (
-                  <div className="flex gap-4 text-[13px] font-semibold">
-                    {(["login", "register"] as const).map((m) => (
+                  <div className="mb-3.5 grid grid-cols-2 gap-1 rounded-2xl bg-[#F1EADC] p-1">
+                    {(
+                      [
+                        ["email", "ایمیل", Mail],
+                        ["phone", "موبایل", Smartphone],
+                      ] as const
+                    ).map(([m, label, Icon]) => (
                       <button
                         key={m}
                         type="button"
-                        onClick={() => setMode(m)}
-                        className={`border-b-2 pb-1 transition ${
-                          mode === m
-                            ? "border-primary text-foreground"
-                            : "border-transparent text-muted-foreground"
+                        onClick={() => setMethod(m)}
+                        className={`flex items-center justify-center gap-1.5 rounded-xl py-2 text-[13px] font-semibold transition ${
+                          method === m ? "bg-primary text-primary-foreground" : "text-foreground"
                         }`}
                       >
-                        {m === "login" ? "ورود" : "ثبت‌نام"}
+                        <Icon className="size-4" />
+                        {label}
                       </button>
                     ))}
                   </div>
-                )}
+                </>
+              ) : null}
 
-                {mode === "register" && (
-                  <Field label="نام">
-                    <input
-                      required
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className={INPUT}
-                      placeholder="نام و نام خانوادگی"
+              {method === "email" ? (
+                <form onSubmit={handleEmailSubmit} className="space-y-3.5">
+                  {signupOpen && (
+                    <div className="flex gap-4 text-[13px] font-semibold">
+                      {(["login", "register"] as const).map((m) => (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => setMode(m)}
+                          className={`border-b-2 pb-1 transition ${
+                            mode === m
+                              ? "border-primary text-foreground"
+                              : "border-transparent text-muted-foreground"
+                          }`}
+                        >
+                          {m === "login" ? "ورود" : "ثبت‌نام"}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {mode === "register" && (
+                    <Field label="نام">
+                      <input
+                        required
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className={INPUT}
+                        placeholder="نام و نام خانوادگی"
+                      />
+                    </Field>
+                  )}
+
+                  <Field label="ایمیل">
+                    <div className="relative">
+                      <Mail className="pointer-events-none absolute right-4 top-1/2 size-[18px] -translate-y-1/2 text-[#A9A79E]" />
+                      <input
+                        required
+                        type="email"
+                        dir="ltr"
+                        autoComplete="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className={`${INPUT} pr-11`}
+                        placeholder="you@example.com"
+                      />
+                    </div>
+                  </Field>
+
+                  <Field label="رمز عبور">
+                    <PasswordInput
+                      value={pw}
+                      onChange={setPw}
+                      autoComplete={mode === "login" ? "current-password" : "new-password"}
                     />
                   </Field>
-                )}
 
-                <Field label="ایمیل">
-                  <input
-                    required
-                    type="email"
-                    dir="ltr"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className={INPUT}
-                    placeholder="you@example.com"
-                  />
-                </Field>
+                  {mode === "login" && (
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setView("forgot")}
+                        className="text-xs font-semibold text-primary"
+                      >
+                        رمز عبور رو فراموش کردی؟
+                      </button>
+                    </div>
+                  )}
 
-                <Field label="رمز عبور">
-                  <input
-                    required
-                    minLength={6}
-                    type="password"
-                    value={pw}
-                    onChange={(e) => setPw(e.target.value)}
-                    className={INPUT}
-                    placeholder="حداقل ۶ کاراکتر"
-                  />
-                </Field>
+                  {needsConfirm && (
+                    <div className="rounded-2xl bg-warn-soft p-3 text-xs leading-6 text-warn-ink">
+                      ایمیلت هنوز تأیید نشده. لینک تأیید رو توی ایمیلت پیدا کن یا
+                      <button
+                        type="button"
+                        onClick={resendConfirmation}
+                        disabled={loading}
+                        className="ms-1 font-bold underline underline-offset-2"
+                      >
+                        دوباره بفرست
+                      </button>
+                    </div>
+                  )}
 
-                {mode === "login" && (
-                  <button
-                    type="button"
-                    onClick={() => setView("forgot")}
-                    className="text-xs font-semibold text-primary"
-                  >
-                    رمز عبور رو فراموش کردی؟
+                  <button disabled={loading} type="submit" className={PRIMARY}>
+                    {loading ? "در حال ورود..." : mode === "login" ? "ورود به باغچه" : "ساخت حساب"}
+                    {!loading && <ArrowLeft className="size-[18px]" />}
                   </button>
-                )}
-
-                {needsConfirm && (
-                  <div className="rounded-2xl bg-warn-soft p-3 text-xs leading-6 text-warn-ink">
-                    ایمیلت هنوز تأیید نشده. لینک تأیید رو توی ایمیلت پیدا کن یا
+                </form>
+              ) : phone === null ? (
+                <form onSubmit={sendCode} className="space-y-3.5">
+                  <Field label="شمارهٔ موبایل">
+                    <input
+                      required
+                      type="tel"
+                      inputMode="tel"
+                      dir="ltr"
+                      autoComplete="tel"
+                      value={phoneInput}
+                      onChange={(e) => setPhoneInput(e.target.value)}
+                      className={INPUT}
+                      placeholder="09121234567"
+                    />
+                  </Field>
+                  <p className="text-[11px] leading-6 text-muted-foreground">
+                    یه کد پیامک می‌شه. اگه قبلاً حساب نداشتی، خودکار ساخته می‌شه.
+                  </p>
+                  <button disabled={loading} type="submit" className={PRIMARY}>
+                    {loading ? "در حال ارسال..." : "ارسال کد"}
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={verifyCode} className="space-y-3.5">
+                  <p className="text-sm leading-7">
+                    کد پیامک‌شده به{" "}
+                    <span dir="ltr" className="font-bold fa-num">
+                      {toFa(toLocalMobile(phone))}
+                    </span>{" "}
+                    رو وارد کن.
+                  </p>
+                  <input
+                    required
+                    autoFocus
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    dir="ltr"
+                    maxLength={8}
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    className={`${INPUT} text-center text-2xl font-bold tracking-[0.5em]`}
+                    placeholder="------"
+                    aria-label="کد ورود"
+                  />
+                  <button disabled={loading} type="submit" className={PRIMARY}>
+                    {loading ? "در حال بررسی..." : "ورود"}
+                  </button>
+                  <div className="flex items-center justify-between text-xs font-semibold">
                     <button
                       type="button"
-                      onClick={resendConfirmation}
-                      disabled={loading}
-                      className="ms-1 font-bold underline underline-offset-2"
+                      onClick={() => setPhone(null)}
+                      className="text-muted-foreground"
                     >
-                      دوباره بفرست
+                      تغییر شماره
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => sendCode()}
+                      disabled={cooldown > 0 || loading}
+                      className="text-primary disabled:text-muted-foreground"
+                    >
+                      {cooldown > 0 ? `ارسال دوباره (${toFa(cooldown)})` : "ارسال دوباره کد"}
                     </button>
                   </div>
-                )}
-
-                <button disabled={loading} type="submit" className={PRIMARY}>
-                  {loading ? "در حال ارسال..." : mode === "login" ? "ورود" : "ثبت‌نام"}
-                </button>
-              </form>
-            ) : phone === null ? (
-              <form onSubmit={sendCode} className="space-y-3.5">
-                <Field label="شمارهٔ موبایل">
-                  <input
-                    required
-                    type="tel"
-                    inputMode="tel"
-                    dir="ltr"
-                    autoComplete="tel"
-                    value={phoneInput}
-                    onChange={(e) => setPhoneInput(e.target.value)}
-                    className={INPUT}
-                    placeholder="09121234567"
-                  />
-                </Field>
-                <p className="text-[11px] leading-6 text-muted-foreground">
-                  یه کد پیامک می‌شه. اگه قبلاً حساب نداشتی، خودکار ساخته می‌شه.
-                </p>
-                <button disabled={loading} type="submit" className={PRIMARY}>
-                  {loading ? "در حال ارسال..." : "ارسال کد"}
-                </button>
-              </form>
-            ) : (
-              <form onSubmit={verifyCode} className="space-y-3.5">
-                <p className="text-sm leading-7">
-                  کد پیامک‌شده به{" "}
-                  <span dir="ltr" className="font-bold fa-num">
-                    {toFa(toLocalMobile(phone))}
-                  </span>{" "}
-                  رو وارد کن.
-                </p>
-                <input
-                  required
-                  autoFocus
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  dir="ltr"
-                  maxLength={8}
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  className={`${INPUT} text-center text-2xl font-bold tracking-[0.5em]`}
-                  placeholder="------"
-                  aria-label="کد ورود"
-                />
-                <button disabled={loading} type="submit" className={PRIMARY}>
-                  {loading ? "در حال بررسی..." : "ورود"}
-                </button>
-                <div className="flex items-center justify-between text-xs font-semibold">
-                  <button
-                    type="button"
-                    onClick={() => setPhone(null)}
-                    className="text-muted-foreground"
-                  >
-                    تغییر شماره
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => sendCode()}
-                    disabled={cooldown > 0 || loading}
-                    className="text-primary disabled:text-muted-foreground"
-                  >
-                    {cooldown > 0 ? `ارسال دوباره (${toFa(cooldown)})` : "ارسال دوباره کد"}
-                  </button>
-                </div>
-              </form>
-            )}
-          </>
-        )}
+                </form>
+              )}
+            </>
+          )}
+        </div>
       </div>
+    </div>
+  );
+}
+
+function PasswordInput({
+  value,
+  onChange,
+  autoComplete,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  autoComplete: string;
+}) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative">
+      <Lock className="pointer-events-none absolute right-4 top-1/2 size-[18px] -translate-y-1/2 text-[#A9A79E]" />
+      <input
+        required
+        minLength={6}
+        type={show ? "text" : "password"}
+        dir="ltr"
+        autoComplete={autoComplete}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={`${INPUT} pl-11 pr-11 text-right`}
+        placeholder="حداقل ۶ کاراکتر"
+      />
+      <button
+        type="button"
+        onClick={() => setShow((v) => !v)}
+        aria-label={show ? "پنهان کردن رمز" : "نمایش رمز"}
+        className="absolute left-3 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-full text-[#8E8B82] hover:bg-black/5"
+      >
+        {show ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
+      </button>
     </div>
   );
 }
