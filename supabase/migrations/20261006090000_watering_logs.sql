@@ -9,6 +9,9 @@ CREATE TABLE IF NOT EXISTS public.watering_logs (
 
 CREATE INDEX IF NOT EXISTS watering_logs_user_date_idx ON public.watering_logs (user_id, watered_on DESC);
 
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.watering_logs TO authenticated;
+GRANT ALL ON public.watering_logs TO service_role;
+
 ALTER TABLE public.watering_logs ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "own watering logs all" ON public.watering_logs;
