@@ -11,7 +11,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/_authenticated/add-plant")({
   head: () => ({
     meta: [
-      { title: "افزودن گیاه • مراقبت آینده گیاه" },
+      { title: "افزودن گیاه • Goldoon" },
       { name: "description", content: "گیاه جدیدی به مجموعه‌ات اضافه کن." },
     ],
   }),

@@ -9,7 +9,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
     meta: [
-      { title: "پروفایل • مراقبت آینده گیاه" },
+      { title: "پروفایل • Goldoon" },
       { name: "description", content: "اطلاعات حساب و تنظیمات." },
     ],
   }),

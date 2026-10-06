@@ -8,7 +8,7 @@ export const Route = createFileRoute("/auth")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "ورود • مراقبت آینده گیاه" },
+      { title: "ورود • Goldoon" },
       { name: "description", content: "وارد حساب کاربری خود شوید یا ثبت‌نام کنید." },
     ],
   }),
@@ -28,7 +28,7 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    document.title = mode === "login" ? "ورود • مراقبت آینده گیاه" : "ثبت‌نام • مراقبت آینده گیاه";
+    document.title = mode === "login" ? "ورود • Goldoon" : "ثبت‌نام • Goldoon";
   }, [mode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -65,7 +65,7 @@ function AuthPage() {
         <div className="grid size-16 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-soft">
           <Leaf className="size-8" />
         </div>
-        <h1 className="text-2xl font-bold text-primary">مراقبت آینده گیاه</h1>
+        <h1 className="text-2xl font-bold text-primary">Goldoon</h1>
         <p className="text-sm text-muted-foreground">گیاهانت رو هوشمند نگه‌دار</p>
       </div>
 

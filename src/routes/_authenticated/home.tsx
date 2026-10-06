@@ -10,7 +10,7 @@ import { useState } from "react";
 export const Route = createFileRoute("/_authenticated/home")({
   head: () => ({
     meta: [
-      { title: "خانه • مراقبت آینده گیاه" },
+      { title: "خانه • Goldoon" },
       { name: "description", content: "نمای کلی از گیاهان و نیازهای آبیاری امروز." },
     ],
   }),
