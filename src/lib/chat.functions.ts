@@ -20,26 +20,42 @@ export const sendChat = createServerFn({ method: "POST" })
     const model = getAiModel();
 
     // Persist user msg
-    await context.supabase.from("chat_messages").insert({
+    const { error: insertError } = await context.supabase.from("chat_messages").insert({
       user_id: context.userId,
       session_id: data.session_id,
       role: "user",
       content: data.message,
       image_url: data.image_url ?? null,
     });
+    if (insertError) console.error("[chat] could not save message", insertError.message);
 
-    // Load history
-    const { data: history } = await context.supabase
+    // Latest 30 messages (newest first from the DB, then back to chronological order).
+    const { data: recent } = await context.supabase
       .from("chat_messages")
       .select("role, content, image_url")
       .eq("user_id", context.userId)
       .eq("session_id", data.session_id)
-      .order("created_at", { ascending: true })
+      .order("created_at", { ascending: false })
       .limit(30);
+    const history = (recent ?? []).reverse();
+    // If saving failed, still answer the message that was just sent.
+    if (insertError || history.length === 0) {
+      history.push({ role: "user", content: data.message, image_url: data.image_url ?? null });
+    }
+
+    // Only the two most recent photos go to the model; older ones become a short note.
+    let imagesLeft = 2;
+    const withImage = new Set<number>();
+    for (let i = history.length - 1; i >= 0 && imagesLeft > 0; i--) {
+      if (history[i].role === "user" && history[i].image_url) {
+        withImage.add(i);
+        imagesLeft--;
+      }
+    }
 
     const messages: Array<{ role: "user" | "assistant"; content: unknown }> = [];
-    for (const m of history ?? []) {
-      if (m.role === "user" && m.image_url) {
+    history.forEach((m, i) => {
+      if (m.role === "user" && m.image_url && withImage.has(i)) {
         messages.push({
           role: "user",
           content: [
@@ -47,10 +63,12 @@ export const sendChat = createServerFn({ method: "POST" })
             { type: "image", image: m.image_url },
           ],
         });
+      } else if (m.role === "user" && m.image_url) {
+        messages.push({ role: "user", content: `${m.content}\n(یک عکس قبلاً فرستاده شده بود)` });
       } else {
         messages.push({ role: m.role as "user" | "assistant", content: m.content });
       }
-    }
+    });
 
     try {
       const { text } = await generateText({
@@ -69,8 +87,8 @@ export const sendChat = createServerFn({ method: "POST" })
 
       return { text };
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "خطا در دریافت پاسخ";
-      throw new Error(msg);
+      console.error("[chat] AI request failed", err);
+      throw new Error("پاسخ هوش مصنوعی دریافت نشد؛ کمی بعد دوباره امتحان کن");
     }
   });
 

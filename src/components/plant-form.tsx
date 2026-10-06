@@ -6,6 +6,7 @@ import { Foliage } from "@/components/foliage";
 import { BigStat } from "@/components/garden-ui";
 import { suggestWateringInterval } from "@/lib/suggest.functions";
 import { toFa } from "@/lib/fa";
+import { compressImage } from "@/lib/image";
 
 export type PlantValues = {
   name: string;
@@ -74,24 +75,16 @@ export function PlantForm({
     }
   };
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
+    e.target.value = ""; // allow picking the same file again
     if (!f) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        const max = 480;
-        const scale = Math.min(1, max / Math.max(img.width, img.height));
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.round(img.width * scale);
-        canvas.height = Math.round(img.height * scale);
-        canvas.getContext("2d")?.drawImage(img, 0, 0, canvas.width, canvas.height);
-        setImageData(canvas.toDataURL("image/jpeg", 0.75));
-      };
-      img.src = reader.result as string;
-    };
-    reader.readAsDataURL(f);
+    try {
+      // Plant photos are shown small, so keep them light (well under the 400k server limit).
+      setImageData(await compressImage(f, { maxSide: 640, maxChars: 300_000 }));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "عکس اضافه نشد");
+    }
   };
 
   const submit = async (e: React.FormEvent) => {

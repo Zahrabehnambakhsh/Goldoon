@@ -8,6 +8,7 @@ import { BackButton, Segmented } from "@/components/garden-ui";
 import { useEffect, useRef, useState } from "react";
 import { sendChat, getChatHistory } from "@/lib/chat.functions";
 import { toast } from "sonner";
+import { compressImage } from "@/lib/image";
 
 export const Route = createFileRoute("/_authenticated/diagnose")({
   head: () => ({
@@ -60,23 +61,30 @@ function DiagnosePage() {
       });
       qc.invalidateQueries({ queryKey: ["chat", SESSION_ID] });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "خطا");
+      const msg = e instanceof Error ? e.message : "";
+      toast.error(
+        /too.?big|too_big|<=/i.test(msg) ? "عکس خیلی بزرگه؛ یه عکس دیگه انتخاب کن" : msg || "خطا",
+      );
     } finally {
       setSending(false);
     }
   };
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
+    e.target.value = ""; // allow picking the same file again
     if (!f) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const url = reader.result as string;
-      setImage(url);
-      // Auto-send diagnose request
-      send("این گیاه چیست و چه مشکلاتی دارد؟ به فارسی پاسخ بده.", url);
-    };
-    reader.readAsDataURL(f);
+    let url: string;
+    try {
+      // Phone photos are several MB; send a ~1024px JPEG instead (enough for the AI to see details).
+      url = await compressImage(f, { maxSide: 1024, maxChars: 700_000 });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "عکس اضافه نشد");
+      return;
+    }
+    setImage(url);
+    // Auto-send diagnose request
+    send("این گیاه چیست و چه مشکلاتی دارد؟ به فارسی پاسخ بده.", url);
   };
 
   return (
