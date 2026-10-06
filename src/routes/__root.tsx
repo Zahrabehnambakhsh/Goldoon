@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "sonner";
+import { publicEnvScript } from "@/lib/public-env";
 
 function NotFoundComponent() {
   return (
@@ -107,6 +108,7 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="fa" dir="rtl">
       <head>
+        <script dangerouslySetInnerHTML={{ __html: publicEnvScript() }} />
         <HeadContent />
       </head>
       <body>

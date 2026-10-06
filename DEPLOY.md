@@ -77,10 +77,7 @@ pm2 save && pm2 startup
 ### روش ب: با Docker
 
 ```sh
-docker build \
-  --build-arg VITE_SUPABASE_URL="https://YOUR-PROJECT.supabase.co" \
-  --build-arg VITE_SUPABASE_PUBLISHABLE_KEY="..." \
-  -t negahdar .
+docker build -t negahdar .
 docker run -d --restart always --env-file .env -p 3000:3000 negahdar
 ```
 
@@ -94,7 +91,33 @@ example.com {
 }
 ```
 
-## ۶. انتشار روی سرویس‌های دیگر
+## ۶. انتشار روی همروش (Darkube)
+
+[همروش](https://hamravesh.com) برنامه را از روی `Dockerfile` همین مخزن می‌سازد و اجرا می‌کند. تنظیمات Supabase هنگام اجرا خوانده می‌شوند، پس لازم نیست موقع build چیزی بدهید.
+
+1. در کنسول همروش یک اپ از نوع **Dockerfile / گیت** بسازید و مخزن گیت‌هاب را وصل کنید:
+   - شاخه: `main`
+   - مسیر Dockerfile: `./Dockerfile`
+   - build context: `.`
+2. **پورت سرویس** را `3000` بگذارید.
+3. در بخش **متغیرهای محیطی** این‌ها را وارد کنید:
+
+   | متغیر | مقدار |
+   | --- | --- |
+   | `SUPABASE_URL` | آدرس پروژهٔ Supabase |
+   | `SUPABASE_PUBLISHABLE_KEY` | کلید anon/publishable |
+   | `AI_API_KEY` | کلید سرویس هوش مصنوعی |
+   | `AI_BASE_URL` | `https://api.avalai.ir/v1` |
+   | `AI_MODEL` | `gemini-2.5-flash` |
+
+4. دامنه را در بخش دامنه‌ها وصل کنید و همان آدرس را در Supabase در **Authentication > URL Configuration** هم وارد کنید.
+
+نکته‌های سرور داخل ایران:
+- **هوش مصنوعی:** گوگل (Gemini) و OpenRouter درخواست‌های سرورهای ایران را رد می‌کنند. از سرویس ایرانی سازگار با OpenAI مثل [AvalAI](https://avalai.ir) استفاده کنید (مقادیر جدول بالا).
+- **Docker Hub:** اگر build در دریافت `node:22-alpine` خطا داد، آینهٔ رجیستری همروش را با build arg بدهید: `NODE_IMAGE=<آدرس آینه>/library/node:22-alpine`.
+- **Supabase:** کاربران مستقیماً از مرورگر به Supabase وصل می‌شوند؛ بعد از راه‌اندازی، ورود و ثبت‌نام را از اینترنت ایران امتحان کنید.
+
+## ۷. انتشار روی سرویس‌های دیگر
 
 خروجی به‌صورت پیش‌فرض برای Node ساخته می‌شود. برای سرویس‌های دیگر هنگام build متغیر `NITRO_PRESET` را بدهید:
 

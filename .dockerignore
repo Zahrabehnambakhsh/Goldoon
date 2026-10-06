@@ -4,3 +4,4 @@ node_modules
 .tanstack
 .git
 .env.local
+.env
