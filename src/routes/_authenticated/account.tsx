@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
-import { Save, Gift, Cake } from "lucide-react";
+import { Save, Gift, Cake, KeyRound } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { BackButton, Segmented } from "@/components/garden-ui";
 import { getProfile, updateProfile } from "@/lib/plants.functions";
 import { toFa } from "@/lib/fa";
@@ -159,7 +160,7 @@ function AccountPage() {
         </ul>
       </div>
 
-      <form onSubmit={onSubmit} className="glass-card mb-6 space-y-3.5 rounded-[30px] p-4">
+      <form onSubmit={onSubmit} className="glass-card mb-3.5 space-y-3.5 rounded-[30px] p-4">
         <Field label="نام">
           <input
             value={name}
@@ -214,7 +215,81 @@ function AccountPage() {
           {saving ? "در حال ذخیره..." : "ذخیره اطلاعات"}
         </button>
       </form>
+
+      <PasswordCard />
     </div>
+  );
+}
+
+/** Lets a signed-in user change their password. */
+function PasswordCard() {
+  const [pw, setPw] = useState("");
+  const [pw2, setPw2] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pw.length < 6) return toast.error("رمز عبور باید حداقل ۶ کاراکتر باشه");
+    if (pw !== pw2) return toast.error("دو رمز با هم یکی نیستن");
+    setSaving(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: pw });
+      if (error) throw error;
+      setPw("");
+      setPw2("");
+      toast.success("رمز عبور ذخیره شد");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "";
+      toast.error(
+        /different from the old/i.test(msg)
+          ? "رمز جدید باید با رمز قبلی فرق داشته باشه"
+          : /reauthentication|recent/i.test(msg)
+            ? "برای تغییر رمز یک بار خارج و دوباره وارد شو"
+            : msg || "خطا در ذخیرهٔ رمز",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <form onSubmit={save} className="glass-card mb-6 space-y-3.5 rounded-[30px] p-4">
+      <h2 className="flex items-center gap-2 text-base font-bold">
+        <span className="grid size-9 place-items-center rounded-full bg-lilac">
+          <KeyRound className="size-4" />
+        </span>
+        تغییر رمز عبور
+      </h2>
+      <p className="text-xs leading-6 text-muted-foreground">
+        رمز فعلی‌ات رو اینجا عوض کن. رمز جدید از دفعهٔ بعد برای ورود لازمه.
+      </p>
+      <Field label="رمز جدید">
+        <input
+          type="password"
+          autoComplete="new-password"
+          value={pw}
+          onChange={(e) => setPw(e.target.value)}
+          placeholder="حداقل ۶ کاراکتر"
+          className="w-full rounded-2xl border border-input bg-white px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary"
+        />
+      </Field>
+      <Field label="تکرار رمز جدید">
+        <input
+          type="password"
+          autoComplete="new-password"
+          value={pw2}
+          onChange={(e) => setPw2(e.target.value)}
+          className="w-full rounded-2xl border border-input bg-white px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary"
+        />
+      </Field>
+      <button
+        type="submit"
+        disabled={saving || !pw}
+        className="w-full rounded-full bg-night py-3.5 text-sm font-semibold text-white disabled:opacity-60"
+      >
+        {saving ? "در حال ذخیره..." : "ذخیرهٔ رمز"}
+      </button>
+    </form>
   );
 }
 
