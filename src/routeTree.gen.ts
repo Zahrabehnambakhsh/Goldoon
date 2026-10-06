@@ -14,10 +14,12 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRemindersRouteImport } from './routes/_authenticated/reminders'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedDiagnoseRouteImport } from './routes/_authenticated/diagnose'
 import { Route as AuthenticatedAddPlantRouteImport } from './routes/_authenticated/add-plant'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as AuthenticatedPlantIdRouteImport } from './routes/_authenticated/plant.$id'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -43,6 +45,12 @@ const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
   id: '/home',
   path: '/home',
@@ -63,6 +71,11 @@ const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPlantIdRoute = AuthenticatedPlantIdRouteImport.update({
+  id: '/plant/$id',
+  path: '/plant/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -71,8 +84,10 @@ export interface FileRoutesByFullPath {
   '/add-plant': typeof AuthenticatedAddPlantRoute
   '/diagnose': typeof AuthenticatedDiagnoseRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/reminders': typeof AuthenticatedRemindersRoute
+  '/plant/$id': typeof AuthenticatedPlantIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -81,8 +96,10 @@ export interface FileRoutesByTo {
   '/add-plant': typeof AuthenticatedAddPlantRoute
   '/diagnose': typeof AuthenticatedDiagnoseRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/reminders': typeof AuthenticatedRemindersRoute
+  '/plant/$id': typeof AuthenticatedPlantIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -93,8 +110,10 @@ export interface FileRoutesById {
   '/_authenticated/add-plant': typeof AuthenticatedAddPlantRoute
   '/_authenticated/diagnose': typeof AuthenticatedDiagnoseRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
+  '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/reminders': typeof AuthenticatedRemindersRoute
+  '/_authenticated/plant/$id': typeof AuthenticatedPlantIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -105,8 +124,10 @@ export interface FileRouteTypes {
     | '/add-plant'
     | '/diagnose'
     | '/home'
+    | '/notifications'
     | '/profile'
     | '/reminders'
+    | '/plant/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -115,8 +136,10 @@ export interface FileRouteTypes {
     | '/add-plant'
     | '/diagnose'
     | '/home'
+    | '/notifications'
     | '/profile'
     | '/reminders'
+    | '/plant/$id'
   id:
     | '__root__'
     | '/'
@@ -126,8 +149,10 @@ export interface FileRouteTypes {
     | '/_authenticated/add-plant'
     | '/_authenticated/diagnose'
     | '/_authenticated/home'
+    | '/_authenticated/notifications'
     | '/_authenticated/profile'
     | '/_authenticated/reminders'
+    | '/_authenticated/plant/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -173,6 +198,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/home': {
       id: '/_authenticated/home'
       path: '/home'
@@ -201,6 +233,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/plant/$id': {
+      id: '/_authenticated/plant/$id'
+      path: '/plant/$id'
+      fullPath: '/plant/$id'
+      preLoaderRoute: typeof AuthenticatedPlantIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -209,8 +248,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAddPlantRoute: typeof AuthenticatedAddPlantRoute
   AuthenticatedDiagnoseRoute: typeof AuthenticatedDiagnoseRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
+  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRemindersRoute: typeof AuthenticatedRemindersRoute
+  AuthenticatedPlantIdRoute: typeof AuthenticatedPlantIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -218,8 +259,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAddPlantRoute: AuthenticatedAddPlantRoute,
   AuthenticatedDiagnoseRoute: AuthenticatedDiagnoseRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
+  AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRemindersRoute: AuthenticatedRemindersRoute,
+  AuthenticatedPlantIdRoute: AuthenticatedPlantIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

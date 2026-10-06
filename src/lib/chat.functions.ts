@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { createLovableAiGatewayProvider } from "./ai-gateway.server";
+import { getAiModel } from "./ai-gateway.server";
 import { generateText } from "ai";
 
 const SYSTEM_PROMPT =
@@ -17,8 +17,7 @@ export const sendChat = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => ChatInput.parse(input))
   .handler(async ({ data, context }) => {
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("LOVABLE_API_KEY missing");
+    const model = getAiModel();
 
     // Persist user msg
     await context.supabase.from("chat_messages").insert({
@@ -54,9 +53,6 @@ export const sendChat = createServerFn({ method: "POST" })
         messages.push({ role: m.role as "user" | "assistant", content: m.content });
       }
     }
-
-    const gateway = createLovableAiGatewayProvider(key);
-    const model = gateway("google/gemini-3.6-flash");
 
     try {
       const { text } = await generateText({

@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { generateText, Output } from "ai";
-import { createLovableAiGatewayProvider } from "./ai-gateway.server";
+import { getAiModel } from "./ai-gateway.server";
 
 const Input = z.object({
   name: z.string().min(1).max(80),
@@ -15,11 +15,7 @@ export const suggestWateringInterval = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => Input.parse(input))
   .handler(async ({ data }) => {
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("LOVABLE_API_KEY missing");
-
-    const gateway = createLovableAiGatewayProvider(key);
-    const model = gateway("google/gemini-3.6-flash");
+    const model = getAiModel();
 
     const prompt = `به عنوان یک متخصص گیاه‌شناس، بر اساس اطلاعات زیر دور آبیاری مناسب (تعداد روز بین هر آبیاری) را پیشنهاد بده.
 - نام گیاه: ${data.name}
@@ -31,7 +27,8 @@ export const suggestWateringInterval = createServerFn({ method: "POST" })
 
     const clamp = (d: unknown, r: unknown) => ({
       days: Math.min(60, Math.max(1, Math.round(Number(d)) || 7)),
-      reason: typeof r === "string" && r.trim() ? r.slice(0, 200) : "پیشنهاد عمومی بر اساس نوع گیاه",
+      reason:
+        typeof r === "string" && r.trim() ? r.slice(0, 200) : "پیشنهاد عمومی بر اساس نوع گیاه",
     });
 
     try {
@@ -65,4 +62,3 @@ export const suggestWateringInterval = createServerFn({ method: "POST" })
       return clamp(num?.[0], text.replace(/\s+/g, " ").trim());
     }
   });
-

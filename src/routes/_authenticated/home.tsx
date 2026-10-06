@@ -2,8 +2,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Bell, Search, Plus, Droplet, Leaf, BarChart3, ChevronLeft } from "lucide-react";
-import { listPlants, waterPlant, getProfile } from "@/lib/plants.functions";
-import { toFa, daysBetween, plantEmoji } from "@/lib/fa";
+import { listPlants, waterPlant, getProfile, getWateringStats } from "@/lib/plants.functions";
+import { toFa, daysBetween, plantEmoji, localIso, wateringStreak } from "@/lib/fa";
 import { Foliage } from "@/components/foliage";
 import { SquareButton, BigStat } from "@/components/garden-ui";
 import { toast } from "sonner";
@@ -20,6 +20,10 @@ export const Route = createFileRoute("/_authenticated/home")({
     await Promise.all([
       context.queryClient.ensureQueryData({ queryKey: ["plants"], queryFn: () => listPlants() }),
       context.queryClient.ensureQueryData({ queryKey: ["profile"], queryFn: () => getProfile() }),
+      context.queryClient.ensureQueryData({
+        queryKey: ["waterings"],
+        queryFn: () => getWateringStats(),
+      }),
     ]);
   },
   component: HomePage,
@@ -45,6 +49,10 @@ function HomePage() {
     queryKey: ["profile"],
     queryFn: () => getProfile(),
   });
+  const { data: waterings } = useSuspenseQuery({
+    queryKey: ["waterings"],
+    queryFn: () => getWateringStats(),
+  });
 
   const today = new Date();
   const displayName = profile?.name || "دوست گیاه‌دوست";
@@ -52,6 +60,7 @@ function HomePage() {
   const daysUsing = profile?.created_at
     ? Math.max(1, daysBetween(today, new Date(profile.created_at)))
     : 1;
+  const streak = wateringStreak(waterings.dates, today);
 
   const withLeft = plants
     .map((p) => ({
@@ -62,12 +71,19 @@ function HomePage() {
   const filtered = withLeft.filter((p) => p.name.toLowerCase().includes(q.toLowerCase()));
   const dueToday = withLeft.filter((p) => p.daysLeft <= 0);
 
-  // Watering plan for the next 7 days, starting today (overdue plants count as today).
+  // This week (Saturday first): past days show real waterings, today shows what's due,
+  // later days show what's planned.
+  const weekday = (today.getDay() + 1) % 7;
   const week = Array.from({ length: 7 }, (_, k) => {
+    const off = k - weekday;
     const d = new Date(today);
-    d.setDate(d.getDate() + k);
-    const count = withLeft.filter((p) => (k === 0 ? p.daysLeft <= 0 : p.daysLeft === k)).length;
-    return { k, label: k === 0 ? "امروز" : DAY_SHORT[d.getDay()], count };
+    d.setDate(d.getDate() + off);
+    const key = localIso(d);
+    const count =
+      off < 0
+        ? waterings.dates.filter((x) => x === key).length
+        : withLeft.filter((p) => (off === 0 ? p.daysLeft <= 0 : p.daysLeft === off)).length;
+    return { off, label: DAY_SHORT[d.getDay()], count };
   });
   const maxCount = Math.max(3, ...week.map((w) => w.count));
 
@@ -75,6 +91,7 @@ function HomePage() {
     try {
       await waterFn({ data: { id } });
       qc.invalidateQueries({ queryKey: ["plants"] });
+      qc.invalidateQueries({ queryKey: ["waterings"] });
       toast.success("آبیاری ثبت شد 💧");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "خطا");
@@ -110,8 +127,10 @@ function HomePage() {
           گیاهانت منتظرتن!
         </p>
         <div className="absolute left-[18px] top-[22px] flex items-center gap-1.5 rounded-[18px] bg-[#FCF6EC]/95 px-3.5 py-2 text-xl font-extrabold shadow-soft fa-num">
-          🌱 {toFa(daysUsing)}
-          <span className="text-[11px] font-medium text-muted-foreground">روز</span>
+          {streak > 0 ? "🔥" : "🌱"} {toFa(streak > 0 ? streak : daysUsing)}
+          <span className="text-[11px] font-medium text-muted-foreground">
+            {streak > 0 ? "روز پشت‌سرهم" : "روز با گلدون"}
+          </span>
         </div>
         <span
           aria-hidden="true"
@@ -163,23 +182,23 @@ function HomePage() {
         <div className="flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-base font-bold">
             <BarChart3 className="size-4" />
-            برنامه آبیاری هفته
+            آبیاری این هفته
           </h2>
-          <span className="rounded-full bg-hatch px-2.5 py-0.5 text-[11px] font-medium">۷ روز</span>
+          <span className="rounded-full bg-hatch px-2.5 py-0.5 text-[11px] font-medium">هفته</span>
         </div>
         <div className="mt-4 grid h-[150px] grid-cols-7 items-end gap-[7px] pt-[30px]">
           {week.map((w) => (
-            <div key={w.k} className="relative flex h-full flex-col items-center justify-end">
-              {w.k === 0 && (
+            <div key={w.off} className="relative flex h-full flex-col items-center justify-end">
+              {w.off === 0 && (
                 <span className="absolute -top-[30px] whitespace-nowrap rounded-[10px] bg-night px-2 py-0.5 text-[11px] font-semibold text-white fa-num after:absolute after:-bottom-1 after:left-1/2 after:-translate-x-1/2 after:border-x-4 after:border-t-4 after:border-x-transparent after:border-t-night after:content-['']">
-                  {toFa(w.count)} گیاه
+                  {toFa(w.count)} منتظر آب
                 </span>
               )}
               <div
                 className={`flex min-h-[34px] w-full flex-col items-center rounded-[14px] pt-2 text-xs font-bold fa-num transition-[height] ${
-                  w.k === 0
+                  w.off === 0
                     ? "bg-warn text-white"
-                    : w.count > 0
+                    : w.off < 0 && w.count > 0
                       ? "bg-primary text-white"
                       : "hatch text-muted-foreground"
                 }`}
@@ -192,6 +211,25 @@ function HomePage() {
             </div>
           ))}
         </div>
+        <div className="mt-2.5 flex flex-wrap gap-3.5 text-[11px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <i className="size-2.5 rounded bg-primary" />
+            انجام‌شده
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <i className="size-2.5 rounded bg-warn" />
+            امروز
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <i className="hatch size-2.5 rounded" />
+            برنامه‌ریزی‌شده
+          </span>
+        </div>
+        {!waterings.available && (
+          <p className="mt-2 text-[11px] text-muted-foreground">
+            سابقهٔ آبیاری هنوز فعال نشده؛ بعد از به‌روزرسانی دیتابیس نمایش داده می‌شه.
+          </p>
+        )}
       </section>
 
       {/* Plants */}
@@ -225,40 +263,47 @@ function HomePage() {
                 due ? "!bg-gradient-to-br from-warn-soft/95 to-[#FCF9F3]/90" : ""
               }`}
             >
-              <div className="flex min-w-0 items-center gap-2">
-                <span
-                  className={`grid size-10 shrink-0 place-items-center overflow-hidden rounded-full text-lg ${
-                    due ? "bg-peach" : "bg-brand-100"
-                  }`}
-                >
-                  {p.image_url ? (
-                    <img src={p.image_url} alt="" className="size-full object-cover" />
-                  ) : (
-                    plantEmoji(p.type)
-                  )}
-                </span>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-bold">{p.name}</p>
-                  {p.latin_name && (
-                    <p className="truncate text-left text-[10px] text-muted-foreground" dir="ltr">
-                      {p.latin_name}
-                    </p>
-                  )}
+              <Link
+                to="/plant/$id"
+                params={{ id: p.id }}
+                aria-label={`جزئیات ${p.name}`}
+                className="flex min-w-0 flex-col gap-2.5"
+              >
+                <div className="flex min-w-0 items-center gap-2">
+                  <span
+                    className={`grid size-10 shrink-0 place-items-center overflow-hidden rounded-full text-lg ${
+                      due ? "bg-peach" : "bg-brand-100"
+                    }`}
+                  >
+                    {p.image_url ? (
+                      <img src={p.image_url} alt="" className="size-full object-cover" />
+                    ) : (
+                      plantEmoji(p.type)
+                    )}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-bold">{p.name}</p>
+                    {p.latin_name && (
+                      <p className="truncate text-left text-[10px] text-muted-foreground" dir="ltr">
+                        {p.latin_name}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              {late ? (
-                <BigStat
-                  value={toFa(-p.daysLeft)}
-                  unit="روز"
-                  label="تأخیر در آبیاری!"
-                  className="text-warn-ink"
-                />
-              ) : p.daysLeft === 0 ? (
-                <BigStat value="امروز" label="وقت آبیاریه" className="text-warn-ink" />
-              ) : (
-                <BigStat value={toFa(p.daysLeft)} unit="روز" label="تا آبیاری بعدی" />
-              )}
+                {late ? (
+                  <BigStat
+                    value={toFa(-p.daysLeft)}
+                    unit="روز"
+                    label="تأخیر در آبیاری!"
+                    className="text-warn-ink"
+                  />
+                ) : p.daysLeft === 0 ? (
+                  <BigStat value="امروز" label="وقت آبیاریه" className="text-warn-ink" />
+                ) : (
+                  <BigStat value={toFa(p.daysLeft)} unit="روز" label="تا آبیاری بعدی" />
+                )}
+              </Link>
 
               <div className="flex items-center justify-between gap-1.5">
                 <div className="flex min-w-0 flex-wrap gap-1">

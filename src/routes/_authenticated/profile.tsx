@@ -1,9 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
-import { LogOut, User as UserIcon, Bell, Languages } from "lucide-react";
-import { listPlants, getProfile } from "@/lib/plants.functions";
+import { LogOut, User as UserIcon, Bell } from "lucide-react";
+import { listPlants, getProfile, getWateringStats } from "@/lib/plants.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { toFa, daysBetween } from "@/lib/fa";
+import { toFa, daysBetween, wateringStreak } from "@/lib/fa";
 import { toast } from "sonner";
 import { BackButton, BigStat, IconBubble, Segmented } from "@/components/garden-ui";
 
@@ -18,6 +18,10 @@ export const Route = createFileRoute("/_authenticated/profile")({
     await Promise.all([
       context.queryClient.ensureQueryData({ queryKey: ["plants"], queryFn: () => listPlants() }),
       context.queryClient.ensureQueryData({ queryKey: ["profile"], queryFn: () => getProfile() }),
+      context.queryClient.ensureQueryData({
+        queryKey: ["waterings"],
+        queryFn: () => getWateringStats(),
+      }),
     ]);
   },
   component: ProfilePage,
@@ -31,16 +35,26 @@ function ProfilePage() {
     queryFn: () => getProfile(),
   });
   const { data: plants } = useSuspenseQuery({ queryKey: ["plants"], queryFn: () => listPlants() });
+  const { data: waterings } = useSuspenseQuery({
+    queryKey: ["waterings"],
+    queryFn: () => getWateringStats(),
+  });
+  const { user } = Route.useRouteContext();
 
   const displayName = profile?.name || "کاربر";
   const initial = displayName.trim().charAt(0) || "گ";
-  const email = (profile as { email?: string } | null)?.email ?? "";
+  const email = user.email ?? "";
 
-  const wateringsDone = plants.reduce(
-    (sum, p) =>
-      sum + Math.floor(daysBetween(new Date(), new Date(p.created_at)) / p.watering_interval_days),
-    0,
-  );
+  // Real count from the history table; rough estimate until that table exists.
+  const wateringsDone = waterings.available
+    ? waterings.total
+    : plants.reduce(
+        (sum, p) =>
+          sum +
+          Math.floor(daysBetween(new Date(), new Date(p.created_at)) / p.watering_interval_days),
+        0,
+      );
+  const streak = wateringStreak(waterings.dates);
   const daysUsing = profile?.created_at
     ? Math.max(1, daysBetween(new Date(), new Date(profile.created_at)))
     : 1;
@@ -52,10 +66,6 @@ function ProfilePage() {
     toast.success("خارج شدی");
     navigate({ to: "/auth", replace: true });
   };
-
-  const healthy = plants.filter(
-    (p) => p.watering_interval_days - daysBetween(new Date(), new Date(p.last_watered)) >= 0,
-  ).length;
 
   return (
     <div className="px-4 pt-[18px]">
@@ -94,7 +104,7 @@ function ProfilePage() {
           title="آبیاری‌ها"
           value={toFa(wateringsDone)}
           unit="بار"
-          label="تخمین از روز اول"
+          label={waterings.available ? "از روز اول" : "تخمینی"}
         />
         <Tile
           tone="rose"
@@ -106,11 +116,11 @@ function ProfilePage() {
         />
         <Tile
           tone="cream"
-          icon="🌿"
-          title="گیاه سالم"
-          value={toFa(healthy)}
-          unit="گیاه"
-          label="آبیاری به‌موقع"
+          icon="🔥"
+          title="پشت‌سرهم"
+          value={toFa(streak)}
+          unit="روز"
+          label="آبیاری بدون وقفه"
           highlight
         />
       </div>
@@ -122,8 +132,12 @@ function ProfilePage() {
           label="اطلاعات حساب"
           onClick={() => navigate({ to: "/account" })}
         />
-        <Row tone="peach" icon={<Bell className="size-4" />} label="اعلان‌ها" />
-        <Row tone="lilac" icon={<Languages className="size-4" />} label="زبان برنامه" />
+        <Row
+          tone="peach"
+          icon={<Bell className="size-4" />}
+          label="اعلان‌ها"
+          onClick={() => navigate({ to: "/notifications" })}
+        />
       </div>
 
       <button

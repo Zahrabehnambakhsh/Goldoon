@@ -163,6 +163,38 @@ export type Database = {
           },
         ]
       }
+      watering_logs: {
+        Row: {
+          created_at: string
+          id: string
+          plant_id: string
+          user_id: string
+          watered_on: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          plant_id: string
+          user_id: string
+          watered_on?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          plant_id?: string
+          user_id?: string
+          watered_on?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watering_logs_plant_id_fkey"
+            columns: ["plant_id"]
+            isOneToOne: false
+            referencedRelation: "plants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
