@@ -3,15 +3,25 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/bottom-nav";
-import { listPlants } from "@/lib/plants.functions";
+import { getProfile, listPlants } from "@/lib/plants.functions";
 import { daysBetween } from "@/lib/fa";
 import { maybeNotifyDuePlants, registerServiceWorker } from "@/lib/notifications";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
-  beforeLoad: async () => {
+  beforeLoad: async ({ context }) => {
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) throw redirect({ to: "/auth" });
+
+    // First login: ask what to call them before anything else. Only when the column exists,
+    // so the app keeps working before the display_name migration has run.
+    const profile = await context.queryClient.ensureQueryData({
+      queryKey: ["profile"],
+      queryFn: () => getProfile(),
+    });
+    if (profile && "display_name" in profile && !profile.display_name) {
+      throw redirect({ to: "/welcome" });
+    }
     return { user: data.user };
   },
   component: AuthedLayout,

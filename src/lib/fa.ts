@@ -50,3 +50,11 @@ export function wateringStreak(dates: string[], today = new Date()): number {
   }
   return n;
 }
+
+/** The name the app addresses the user by: chosen display name, else profile name. */
+export function addressName(
+  profile: { display_name?: string | null; name?: string | null } | null | undefined,
+  fallback = "دوست گیاه‌دوست",
+): string {
+  return profile?.display_name?.trim() || profile?.name?.trim() || fallback;
+}

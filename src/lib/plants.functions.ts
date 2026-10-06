@@ -122,6 +122,7 @@ export const getProfile = createServerFn({ method: "GET" })
 
 const ProfileUpdateInput = z.object({
   name: z.string().trim().min(1, "نام لازم است").max(80),
+  display_name: z.string().trim().min(1).max(40).optional(),
   family_name: z.string().trim().max(80).optional().nullable(),
   birth_date: z
     .string()
@@ -146,6 +147,7 @@ export const updateProfile = createServerFn({ method: "POST" })
     const payload = {
       id: context.userId,
       name: data.name,
+      ...(data.display_name ? { display_name: data.display_name } : {}),
       family_name: data.family_name || null,
       birth_date: data.birth_date ? data.birth_date : null,
       phone: data.phone || null,
@@ -158,4 +160,19 @@ export const updateProfile = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
     return row;
+  });
+
+/** Saves the name the app uses to address the user (asked once after first login). */
+export const setDisplayName = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ display_name: z.string().trim().min(1, "یه اسم بنویس").max(40) }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
+      .from("profiles")
+      .update({ display_name: data.display_name, updated_at: new Date().toISOString() })
+      .eq("id", context.userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });

@@ -58,12 +58,14 @@ function AccountPage() {
 
   const p = profile as {
     name?: string;
+    display_name?: string | null;
     family_name?: string | null;
     birth_date?: string | null;
     phone?: string | null;
   } | null;
 
   const [name, setName] = useState(p?.name ?? "");
+  const [callName, setCallName] = useState(p?.display_name ?? "");
   const [familyName, setFamilyName] = useState(p?.family_name ?? "");
   const [birthDate, setBirthDate] = useState(p?.birth_date ?? "");
   const [phone, setPhone] = useState(p?.phone ?? "");
@@ -81,6 +83,7 @@ function AccountPage() {
       await updateProfile({
         data: {
           name: name.trim(),
+          ...(callName.trim() ? { display_name: callName.trim() } : {}),
           family_name: familyName.trim() || null,
           birth_date: birthDate || null,
           phone: phone.trim() || null,
@@ -161,6 +164,16 @@ function AccountPage() {
       </div>
 
       <form onSubmit={onSubmit} className="glass-card mb-3.5 space-y-3.5 rounded-[30px] p-4">
+        <Field label="به چه اسمی صدات کنیم؟">
+          <input
+            value={callName}
+            onChange={(e) => setCallName(e.target.value)}
+            placeholder="مثلاً زهرا"
+            className="w-full rounded-2xl border border-input bg-white px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary"
+            maxLength={40}
+          />
+        </Field>
+
         <Field label="نام">
           <input
             value={name}

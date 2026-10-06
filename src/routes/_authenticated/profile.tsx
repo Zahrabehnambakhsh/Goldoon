@@ -3,7 +3,7 @@ import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { LogOut, User as UserIcon, Bell } from "lucide-react";
 import { listPlants, getProfile, getWateringStats } from "@/lib/plants.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { toFa, daysBetween, wateringStreak } from "@/lib/fa";
+import { toFa, daysBetween, wateringStreak, addressName } from "@/lib/fa";
 import { toLocalMobile } from "@/lib/phone";
 import { toast } from "sonner";
 import { BackButton, BigStat, IconBubble, Segmented } from "@/components/garden-ui";
@@ -42,7 +42,7 @@ function ProfilePage() {
   });
   const { user } = Route.useRouteContext();
 
-  const displayName = profile?.name || "کاربر";
+  const displayName = addressName(profile, "کاربر");
   const initial = displayName.trim().charAt(0) || "گ";
   // Phone-only accounts have no email; show their number instead.
   const email = user.email || (user.phone ? toLocalMobile(user.phone) : "");

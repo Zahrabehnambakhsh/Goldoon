@@ -3,7 +3,7 @@ import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Bell, Search, Plus, Droplet, Leaf, BarChart3, ChevronLeft } from "lucide-react";
 import { listPlants, waterPlant, getProfile, getWateringStats } from "@/lib/plants.functions";
-import { toFa, daysBetween, plantEmoji, localIso, wateringStreak } from "@/lib/fa";
+import { toFa, daysBetween, plantEmoji, localIso, wateringStreak, addressName } from "@/lib/fa";
 import { Foliage } from "@/components/foliage";
 import { SquareButton, BigStat } from "@/components/garden-ui";
 import { toast } from "sonner";
@@ -55,7 +55,7 @@ function HomePage() {
   });
 
   const today = new Date();
-  const displayName = profile?.name || "دوست گیاه‌دوست";
+  const displayName = addressName(profile, "دوست گیاه‌دوست");
   const initial = displayName.trim().charAt(0) || "گ";
   const daysUsing = profile?.created_at
     ? Math.max(1, daysBetween(today, new Date(profile.created_at)))
