@@ -22,6 +22,27 @@
 
 > داده‌های فعلی (کاربران و گیاهان ثبت‌شده) خودکار منتقل نمی‌شوند. اگر لازم است، از Lovable Cloud خروجی بگیرید و در پروژه‌ی جدید وارد کنید.
 
+### روش‌های ورود
+
+برنامه چهار روش ورود دارد. هر کدام باید یک بار در Supabase روشن شود:
+
+**ایمیل و رمز عبور، فراموشی رمز و تأیید ایمیل**
+- به‌صورت پیش‌فرض روشن است. در **Authentication > URL Configuration** آدرس سایت را در Site URL بگذارید و این دو را به Redirect URLs اضافه کنید: `https://دامنه/home` و `https://دامنه/reset-password`.
+- اگر تأیید ایمیل (Confirm email) روشن باشد، کاربر بعد از ثبت‌نام باید روی لینک ایمیل بزند. در صفحهٔ ورود دکمهٔ «دوباره بفرست» برای ارسال دوبارهٔ ایمیل تأیید هست.
+- ایمیل‌های پیش‌فرض Supabase محدودیت تعداد دارند. برای استفادهٔ واقعی در **Authentication > Emails > SMTP Settings** یک سرویس ایمیل (SMTP) وصل کنید.
+
+**ورود با گوگل**
+1. در [Google Cloud Console](https://console.cloud.google.com) یک OAuth Client از نوع Web بسازید و در Authorized redirect URIs آدرسی را بگذارید که Supabase در صفحهٔ Google provider نشان می‌دهد (`https://<پروژه>.supabase.co/auth/v1/callback`).
+2. در Supabase در **Authentication > Providers > Google** آن را روشن کنید و Client ID و Client Secret را وارد کنید.
+
+**ورود با موبایل و کد پیامکی (کاوه‌نگار)**
+1. در [کاوه‌نگار](https://kavenegar.com) حساب بسازید، کلید API بگیرید و یک الگوی «تأیید» بسازید که متنش مثلاً این باشد: `کد ورود گلدون: %token%`. صبر کنید تا الگو تأیید شود.
+2. در Supabase در **Authentication > Providers > Phone** ورود با موبایل را روشن کنید (سرویس پیامک داخلی Supabase را لازم ندارید).
+3. در **Authentication > Hooks** یک **Send SMS hook** از نوع HTTPS بسازید با آدرس `https://دامنه/api/sms-hook` و رمزی که Supabase می‌سازد را بردارید.
+4. این متغیرها را روی سرور بگذارید: `KAVENEGAR_API_KEY`، `KAVENEGAR_TEMPLATE` (نام الگو) و `SEND_SMS_HOOK_SECRET` (رمز مرحلهٔ ۳).
+
+Supabase کد را می‌سازد و بررسی می‌کند. سرور گلدون فقط آن را با کاوه‌نگار پیامک می‌کند.
+
 ## ۳. تنظیم متغیرها
 
 ```sh
@@ -109,6 +130,9 @@ example.com {
    | `AI_API_KEY` | کلید سرویس هوش مصنوعی |
    | `AI_BASE_URL` | `https://api.avalai.ir/v1` |
    | `AI_MODEL` | `gemini-2.5-flash` |
+   | `KAVENEGAR_API_KEY` | کلید کاوه‌نگار (برای ورود با موبایل) |
+   | `KAVENEGAR_TEMPLATE` | نام الگوی تأیید در کاوه‌نگار |
+   | `SEND_SMS_HOOK_SECRET` | رمز Send SMS hook در Supabase |
 
 4. دامنه را در بخش دامنه‌ها وصل کنید و همان آدرس را در Supabase در **Authentication > URL Configuration** هم وارد کنید.
 

@@ -2,8 +2,10 @@ import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Leaf } from "lucide-react";
+import { Leaf, Mail, Smartphone, ArrowRight } from "lucide-react";
 import { Foliage } from "@/components/foliage";
+import { normalizeIranMobile, toEnglishDigits, toLocalMobile } from "@/lib/phone";
+import { toFa } from "@/lib/fa";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -20,52 +22,186 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+type Method = "email" | "phone";
+type View = "form" | "forgot" | "check-email";
+
+const INPUT =
+  "w-full rounded-2xl border border-input bg-white px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary";
+const PRIMARY =
+  "w-full rounded-full bg-primary py-[15px] text-[15px] font-semibold text-primary-foreground shadow-soft transition hover:bg-brand-900 disabled:opacity-60";
+
+/** Supabase error messages → Persian. */
+function faError(err: unknown): string {
+  const msg = err instanceof Error ? err.message : String(err ?? "");
+  const m = msg.toLowerCase();
+  if (m.includes("invalid login credentials")) return "ایمیل یا رمز عبور اشتباهه";
+  if (m.includes("email not confirmed")) return "ایمیلت هنوز تأیید نشده";
+  if (m.includes("already registered") || m.includes("already been registered"))
+    return "با این ایمیل قبلاً ثبت‌نام شده؛ وارد شو";
+  if (m.includes("password should be at least")) return "رمز عبور باید حداقل ۶ کاراکتر باشه";
+  if (m.includes("token has expired") || (m.includes("invalid") && m.includes("otp")))
+    return "کد اشتباهه یا منقضی شده";
+  if (m.includes("phone") && (m.includes("provider") || m.includes("disabled")))
+    return "ورود با موبایل هنوز روی سرور فعال نشده";
+  if (m.includes("provider is not enabled")) return "این روش ورود هنوز روی سرور فعال نشده";
+  if (m.includes("failed to fetch") || m.includes("network"))
+    return "اتصال به سرور برقرار نشد؛ اینترنتت رو چک کن";
+  if (m.includes("rate limit") || m.includes("for security purposes"))
+    return "تعداد درخواست‌ها زیاد شد؛ کمی بعد دوباره امتحان کن";
+  return msg || "خطایی پیش اومد";
+}
+
 function AuthPage() {
   const navigate = useNavigate();
+  const [method, setMethod] = useState<Method>("email");
+  const [view, setView] = useState<View>("form");
   const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
+  const [needsConfirm, setNeedsConfirm] = useState(false);
+  const [checkEmailText, setCheckEmailText] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Phone OTP
+  const [phoneInput, setPhoneInput] = useState("");
+  const [phone, setPhone] = useState<string | null>(null);
+  const [code, setCode] = useState("");
+  const [cooldown, setCooldown] = useState(0);
 
   useEffect(() => {
     document.title = mode === "login" ? "ورود • Goldoon" : "ثبت‌نام • Goldoon";
   }, [mode]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
+
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setNeedsConfirm(false);
     try {
       if (mode === "register") {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password: pw,
-          options: {
-            data: { name },
-            emailRedirectTo: `${window.location.origin}/home`,
-          },
+          options: { data: { name }, emailRedirectTo: `${origin}/home` },
         });
         if (error) throw error;
+        if (!data.session) {
+          setCheckEmailText(`یه لینک تأیید به ${email} فرستادیم. روی لینک بزن تا حسابت فعال بشه.`);
+          setView("check-email");
+          return;
+        }
         toast.success("ثبت‌نام موفق بود!");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password: pw });
-        if (error) throw error;
+        if (error) {
+          if (error.message.toLowerCase().includes("email not confirmed")) setNeedsConfirm(true);
+          throw error;
+        }
         toast.success("خوش اومدی!");
       }
       navigate({ to: "/home" });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "خطا در ورود");
+      toast.error(faError(err));
     } finally {
       setLoading(false);
     }
   };
 
-  const input =
-    "w-full rounded-2xl border border-input bg-white px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary";
+  const resendConfirmation = async () => {
+    if (!email) return toast.error("ایمیلت رو وارد کن");
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email,
+        options: { emailRedirectTo: `${origin}/home` },
+      });
+      if (error) throw error;
+      toast.success("ایمیل تأیید دوباره فرستاده شد");
+    } catch (err) {
+      toast.error(faError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sendReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${origin}/reset-password`,
+      });
+      if (error) throw error;
+      setCheckEmailText(`اگه حسابی با ${email} وجود داشته باشه، لینک تغییر رمز براش فرستاده شد.`);
+      setView("check-email");
+    } catch (err) {
+      toast.error(faError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sendCode = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const normalized = normalizeIranMobile(phoneInput);
+    if (!normalized) return toast.error("شمارهٔ موبایل درست نیست (مثلاً ۰۹۱۲۱۲۳۴۵۶۷)");
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({ phone: normalized });
+      if (error) throw error;
+      setPhone(normalized);
+      setCode("");
+      setCooldown(60);
+      toast.success("کد ورود پیامک شد");
+    } catch (err) {
+      toast.error(faError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!phone) return;
+    const token = toEnglishDigits(code).replace(/\D/g, "");
+    if (token.length < 4) return toast.error("کد رو کامل وارد کن");
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({ phone, token, type: "sms" });
+      if (error) throw error;
+      toast.success("خوش اومدی!");
+      navigate({ to: "/home" });
+    } catch (err) {
+      toast.error(faError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signInWithGoogle = async () => {
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${origin}/home` },
+    });
+    if (error) {
+      toast.error(faError(error));
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col gap-3.5 px-4 py-6">
-      <section className="hero-sand relative flex min-h-[300px] flex-col overflow-hidden rounded-[34px] px-5 pt-[22px]">
+      <section className="hero-sand relative flex min-h-[260px] flex-col overflow-hidden rounded-[34px] px-5 pt-[22px]">
         <Foliage />
         <div className="relative mb-3.5 grid size-14 place-items-center rounded-[18px] bg-night text-white">
           <Leaf className="size-7" />
@@ -74,71 +210,276 @@ function AuthPage() {
         <p className="relative mt-1 text-[15px]">گیاهانت رو هوشمند نگه‌دار</p>
       </section>
 
-      <form onSubmit={handleSubmit} className="glass-card rounded-[30px] p-[18px]">
-        <div className="mb-3.5 flex rounded-2xl bg-[#F1EADC] p-1">
-          {(["login", "register"] as const).map((m) => (
+      <div className="glass-card rounded-[30px] p-[18px]">
+        {view === "check-email" ? (
+          <div className="space-y-4 text-center">
+            <span className="mx-auto grid size-14 place-items-center rounded-full bg-brand-100 text-primary">
+              <Mail className="size-6" />
+            </span>
+            <p className="text-sm leading-7">{checkEmailText}</p>
             <button
-              key={m}
               type="button"
-              onClick={() => setMode(m)}
-              className={`flex-1 rounded-xl py-2 text-[13px] font-semibold transition ${
-                mode === m ? "bg-primary text-primary-foreground" : "text-foreground"
-              }`}
+              onClick={() => {
+                setView("form");
+                setMode("login");
+              }}
+              className={PRIMARY}
             >
-              {m === "login" ? "ورود" : "ثبت‌نام"}
+              برگشت به ورود
             </button>
-          ))}
-        </div>
-
-        <div className="space-y-3.5">
-          {mode === "register" && (
-            <label className="block">
-              <span className="mb-2 block text-[13px] font-semibold">نام</span>
+          </div>
+        ) : view === "forgot" ? (
+          <form onSubmit={sendReset} className="space-y-3.5">
+            <button
+              type="button"
+              onClick={() => setView("form")}
+              className="flex items-center gap-1 text-[13px] font-semibold text-muted-foreground"
+            >
+              <ArrowRight className="size-4" />
+              برگشت
+            </button>
+            <h2 className="text-lg font-extrabold">فراموشی رمز عبور</h2>
+            <p className="text-xs leading-6 text-muted-foreground">
+              ایمیل حسابت رو وارد کن تا لینک ساختن رمز جدید رو برات بفرستیم.
+            </p>
+            <Field label="ایمیل">
               <input
                 required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className={input}
-                placeholder="نام و نام خانوادگی"
+                type="email"
+                dir="ltr"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={INPUT}
+                placeholder="you@example.com"
               />
-            </label>
-          )}
+            </Field>
+            <button disabled={loading} type="submit" className={PRIMARY}>
+              {loading ? "در حال ارسال..." : "ارسال لینک"}
+            </button>
+          </form>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={signInWithGoogle}
+              disabled={loading}
+              className="mb-3.5 flex w-full items-center justify-center gap-2.5 rounded-full border border-input bg-white py-3 text-sm font-semibold transition hover:bg-[#FAF7F1] disabled:opacity-60"
+            >
+              <GoogleIcon />
+              ادامه با گوگل
+            </button>
 
-          <label className="block">
-            <span className="mb-2 block text-[13px] font-semibold">ایمیل</span>
-            <input
-              required
-              type="email"
-              dir="ltr"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={input}
-              placeholder="you@example.com"
-            />
-          </label>
+            <div className="mb-3.5 flex items-center gap-3 text-[11px] text-muted-foreground">
+              <span className="h-px flex-1 bg-input" />
+              یا
+              <span className="h-px flex-1 bg-input" />
+            </div>
 
-          <label className="block">
-            <span className="mb-2 block text-[13px] font-semibold">رمز عبور</span>
-            <input
-              required
-              minLength={6}
-              type="password"
-              value={pw}
-              onChange={(e) => setPw(e.target.value)}
-              className={input}
-              placeholder="حداقل ۶ کاراکتر"
-            />
-          </label>
+            <div className="mb-3.5 grid grid-cols-2 gap-1 rounded-2xl bg-[#F1EADC] p-1">
+              {(
+                [
+                  ["email", "ایمیل", Mail],
+                  ["phone", "موبایل", Smartphone],
+                ] as const
+              ).map(([m, label, Icon]) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setMethod(m)}
+                  className={`flex items-center justify-center gap-1.5 rounded-xl py-2 text-[13px] font-semibold transition ${
+                    method === m ? "bg-primary text-primary-foreground" : "text-foreground"
+                  }`}
+                >
+                  <Icon className="size-4" />
+                  {label}
+                </button>
+              ))}
+            </div>
 
-          <button
-            disabled={loading}
-            type="submit"
-            className="w-full rounded-full bg-primary py-[15px] text-[15px] font-semibold text-primary-foreground shadow-soft transition hover:bg-brand-900 disabled:opacity-60"
-          >
-            {loading ? "در حال ارسال..." : mode === "login" ? "ورود" : "ثبت‌نام"}
-          </button>
-        </div>
-      </form>
+            {method === "email" ? (
+              <form onSubmit={handleEmailSubmit} className="space-y-3.5">
+                <div className="flex gap-4 text-[13px] font-semibold">
+                  {(["login", "register"] as const).map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => setMode(m)}
+                      className={`border-b-2 pb-1 transition ${
+                        mode === m
+                          ? "border-primary text-foreground"
+                          : "border-transparent text-muted-foreground"
+                      }`}
+                    >
+                      {m === "login" ? "ورود" : "ثبت‌نام"}
+                    </button>
+                  ))}
+                </div>
+
+                {mode === "register" && (
+                  <Field label="نام">
+                    <input
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className={INPUT}
+                      placeholder="نام و نام خانوادگی"
+                    />
+                  </Field>
+                )}
+
+                <Field label="ایمیل">
+                  <input
+                    required
+                    type="email"
+                    dir="ltr"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className={INPUT}
+                    placeholder="you@example.com"
+                  />
+                </Field>
+
+                <Field label="رمز عبور">
+                  <input
+                    required
+                    minLength={6}
+                    type="password"
+                    value={pw}
+                    onChange={(e) => setPw(e.target.value)}
+                    className={INPUT}
+                    placeholder="حداقل ۶ کاراکتر"
+                  />
+                </Field>
+
+                {mode === "login" && (
+                  <button
+                    type="button"
+                    onClick={() => setView("forgot")}
+                    className="text-xs font-semibold text-primary"
+                  >
+                    رمز عبور رو فراموش کردی؟
+                  </button>
+                )}
+
+                {needsConfirm && (
+                  <div className="rounded-2xl bg-warn-soft p-3 text-xs leading-6 text-warn-ink">
+                    ایمیلت هنوز تأیید نشده. لینک تأیید رو توی ایمیلت پیدا کن یا
+                    <button
+                      type="button"
+                      onClick={resendConfirmation}
+                      disabled={loading}
+                      className="ms-1 font-bold underline underline-offset-2"
+                    >
+                      دوباره بفرست
+                    </button>
+                  </div>
+                )}
+
+                <button disabled={loading} type="submit" className={PRIMARY}>
+                  {loading ? "در حال ارسال..." : mode === "login" ? "ورود" : "ثبت‌نام"}
+                </button>
+              </form>
+            ) : phone === null ? (
+              <form onSubmit={sendCode} className="space-y-3.5">
+                <Field label="شمارهٔ موبایل">
+                  <input
+                    required
+                    type="tel"
+                    inputMode="tel"
+                    dir="ltr"
+                    autoComplete="tel"
+                    value={phoneInput}
+                    onChange={(e) => setPhoneInput(e.target.value)}
+                    className={INPUT}
+                    placeholder="09121234567"
+                  />
+                </Field>
+                <p className="text-[11px] leading-6 text-muted-foreground">
+                  یه کد پیامک می‌شه. اگه قبلاً حساب نداشتی، خودکار ساخته می‌شه.
+                </p>
+                <button disabled={loading} type="submit" className={PRIMARY}>
+                  {loading ? "در حال ارسال..." : "ارسال کد"}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={verifyCode} className="space-y-3.5">
+                <p className="text-sm leading-7">
+                  کد پیامک‌شده به{" "}
+                  <span dir="ltr" className="font-bold fa-num">
+                    {toFa(toLocalMobile(phone))}
+                  </span>{" "}
+                  رو وارد کن.
+                </p>
+                <input
+                  required
+                  autoFocus
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  dir="ltr"
+                  maxLength={8}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  className={`${INPUT} text-center text-2xl font-bold tracking-[0.5em]`}
+                  placeholder="------"
+                  aria-label="کد ورود"
+                />
+                <button disabled={loading} type="submit" className={PRIMARY}>
+                  {loading ? "در حال بررسی..." : "ورود"}
+                </button>
+                <div className="flex items-center justify-between text-xs font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => setPhone(null)}
+                    className="text-muted-foreground"
+                  >
+                    تغییر شماره
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => sendCode()}
+                    disabled={cooldown > 0 || loading}
+                    className="text-primary disabled:text-muted-foreground"
+                  >
+                    {cooldown > 0 ? `ارسال دوباره (${toFa(cooldown)})` : "ارسال دوباره کد"}
+                  </button>
+                </div>
+              </form>
+            )}
+          </>
+        )}
+      </div>
     </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-[13px] font-semibold">{label}</span>
+      {children}
+    </label>
+  );
+}
+
+function GoogleIcon() {
+  return (
+    <svg viewBox="0 0 48 48" className="size-5" aria-hidden="true">
+      <path
+        fill="#FFC107"
+        d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"
+      />
+      <path
+        fill="#FF3D00"
+        d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"
+      />
+      <path
+        fill="#4CAF50"
+        d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"
+      />
+      <path
+        fill="#1976D2"
+        d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"
+      />
+    </svg>
   );
 }

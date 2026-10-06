@@ -4,6 +4,7 @@ import { LogOut, User as UserIcon, Bell } from "lucide-react";
 import { listPlants, getProfile, getWateringStats } from "@/lib/plants.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toFa, daysBetween, wateringStreak } from "@/lib/fa";
+import { toLocalMobile } from "@/lib/phone";
 import { toast } from "sonner";
 import { BackButton, BigStat, IconBubble, Segmented } from "@/components/garden-ui";
 
@@ -43,7 +44,8 @@ function ProfilePage() {
 
   const displayName = profile?.name || "کاربر";
   const initial = displayName.trim().charAt(0) || "گ";
-  const email = user.email ?? "";
+  // Phone-only accounts have no email; show their number instead.
+  const email = user.email || (user.phone ? toLocalMobile(user.phone) : "");
 
   // Real count from the history table; rough estimate until that table exists.
   const wateringsDone = waterings.available

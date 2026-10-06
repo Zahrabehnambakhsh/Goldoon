@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedAddPlantRouteImport } from './routes/_authenticated/add-plant'
 import { Route as AuthenticatedDiagnoseRouteImport } from './routes/_authenticated/diagnose'
@@ -19,6 +20,7 @@ import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/h
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedRemindersRouteImport } from './routes/_authenticated/reminders'
+import { Route as ApiSmsHookRouteImport } from './routes/api/sms-hook'
 import { Route as AuthenticatedPlantIdRouteImport } from './routes/_authenticated/plant.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -33,6 +35,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
@@ -71,6 +78,11 @@ const AuthenticatedRemindersRoute = AuthenticatedRemindersRouteImport.update({
   path: '/reminders',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiSmsHookRoute = ApiSmsHookRouteImport.update({
+  id: '/api/sms-hook',
+  path: '/api/sms-hook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedPlantIdRoute = AuthenticatedPlantIdRouteImport.update({
   id: '/plant/$id',
   path: '/plant/$id',
@@ -80,6 +92,7 @@ const AuthenticatedPlantIdRoute = AuthenticatedPlantIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/account': typeof AuthenticatedAccountRoute
   '/add-plant': typeof AuthenticatedAddPlantRoute
   '/diagnose': typeof AuthenticatedDiagnoseRoute
@@ -87,11 +100,13 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/reminders': typeof AuthenticatedRemindersRoute
+  '/api/sms-hook': typeof ApiSmsHookRoute
   '/plant/$id': typeof AuthenticatedPlantIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/account': typeof AuthenticatedAccountRoute
   '/add-plant': typeof AuthenticatedAddPlantRoute
   '/diagnose': typeof AuthenticatedDiagnoseRoute
@@ -99,6 +114,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/reminders': typeof AuthenticatedRemindersRoute
+  '/api/sms-hook': typeof ApiSmsHookRoute
   '/plant/$id': typeof AuthenticatedPlantIdRoute
 }
 export interface FileRoutesById {
@@ -106,6 +122,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/add-plant': typeof AuthenticatedAddPlantRoute
   '/_authenticated/diagnose': typeof AuthenticatedDiagnoseRoute
@@ -113,6 +130,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/reminders': typeof AuthenticatedRemindersRoute
+  '/api/sms-hook': typeof ApiSmsHookRoute
   '/_authenticated/plant/$id': typeof AuthenticatedPlantIdRoute
 }
 export interface FileRouteTypes {
@@ -120,6 +138,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/reset-password'
     | '/account'
     | '/add-plant'
     | '/diagnose'
@@ -127,11 +146,13 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/profile'
     | '/reminders'
+    | '/api/sms-hook'
     | '/plant/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
+    | '/reset-password'
     | '/account'
     | '/add-plant'
     | '/diagnose'
@@ -139,12 +160,14 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/profile'
     | '/reminders'
+    | '/api/sms-hook'
     | '/plant/$id'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/reset-password'
     | '/_authenticated/account'
     | '/_authenticated/add-plant'
     | '/_authenticated/diagnose'
@@ -152,6 +175,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/profile'
     | '/_authenticated/reminders'
+    | '/api/sms-hook'
     | '/_authenticated/plant/$id'
   fileRoutesById: FileRoutesById
 }
@@ -159,6 +183,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiSmsHookRoute: typeof ApiSmsHookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -182,6 +208,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/account': {
@@ -233,6 +266,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRemindersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/sms-hook': {
+      id: '/api/sms-hook'
+      path: '/api/sms-hook'
+      fullPath: '/api/sms-hook'
+      preLoaderRoute: typeof ApiSmsHookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/plant/$id': {
       id: '/_authenticated/plant/$id'
       path: '/plant/$id'
@@ -272,6 +312,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  ApiSmsHookRoute: ApiSmsHookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
