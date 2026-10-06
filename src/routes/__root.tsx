@@ -85,7 +85,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
-      { property: "og:image", content: "/icon-512.png" },
+      { property: "og:image", content: "/icon-512.png?v=3" },
       { property: "og:title", content: "Goldoon" },
       {
         property: "og:description",
@@ -96,10 +96,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.ico", sizes: "any" },
-      { rel: "icon", href: "/icon.svg", type: "image/svg+xml" },
-      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
-      { rel: "manifest", href: "/site.webmanifest" },
+      { rel: "icon", href: "/favicon.ico?v=3", sizes: "any" },
+      { rel: "icon", href: "/icon.svg?v=3", type: "image/svg+xml" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png?v=3" },
+      { rel: "manifest", href: "/site.webmanifest?v=3" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {

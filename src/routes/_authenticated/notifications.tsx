@@ -14,7 +14,7 @@ import {
 export const Route = createFileRoute("/_authenticated/notifications")({
   head: () => ({
     meta: [
-      { title: "اعلان‌ها • Goldoon" },
+      { title: "Goldoon" },
       { name: "description", content: "یادآور آبیاری روی همین دستگاه." },
     ],
   }),

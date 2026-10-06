@@ -13,10 +13,7 @@ import { PlantIcon } from "@/components/flat-art";
 
 export const Route = createFileRoute("/_authenticated/plant/$id")({
   head: () => ({
-    meta: [
-      { title: "گیاه من • Goldoon" },
-      { name: "description", content: "جزئیات، ویرایش و حذف گیاه." },
-    ],
+    meta: [{ title: "Goldoon" }, { name: "description", content: "جزئیات، ویرایش و حذف گیاه." }],
   }),
   loader: ({ context, params }) =>
     context.queryClient.ensureQueryData({

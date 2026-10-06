@@ -12,7 +12,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/_authenticated/diagnose")({
   head: () => ({
     meta: [
-      { title: "تشخیص گیاه • Goldoon" },
+      { title: "Goldoon" },
       { name: "description", content: "با هوش مصنوعی گیاهت را تشخیص بده و سوال بپرس." },
     ],
   }),

@@ -9,7 +9,7 @@ import { createPlant } from "@/lib/plants.functions";
 export const Route = createFileRoute("/_authenticated/add-plant")({
   head: () => ({
     meta: [
-      { title: "افزودن گیاه • Goldoon" },
+      { title: "Goldoon" },
       { name: "description", content: "گیاه جدیدی به مجموعه‌ات اضافه کن." },
     ],
   }),

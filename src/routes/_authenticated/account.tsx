@@ -35,7 +35,7 @@ function birthdayDiscount(birthDate: string | null | undefined): {
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({
     meta: [
-      { title: "اطلاعات حساب • Goldoon" },
+      { title: "Goldoon" },
       { name: "description", content: "نام، تاریخ تولد و شماره تماس خود را ویرایش کنید." },
     ],
   }),

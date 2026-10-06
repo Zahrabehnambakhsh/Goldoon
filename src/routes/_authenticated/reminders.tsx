@@ -12,7 +12,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/_authenticated/reminders")({
   head: () => ({
     meta: [
-      { title: "یادآورها • Goldoon" },
+      { title: "Goldoon" },
       { name: "description", content: "برنامه آبیاری امروز و روزهای آینده." },
     ],
   }),

@@ -25,7 +25,7 @@ import { useState } from "react";
 export const Route = createFileRoute("/_authenticated/home")({
   head: () => ({
     meta: [
-      { title: "خانه • Goldoon" },
+      { title: "Goldoon" },
       { name: "description", content: "نمای کلی از گیاهان و نیازهای آبیاری امروز." },
     ],
   }),

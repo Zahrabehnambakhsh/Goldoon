@@ -10,10 +10,7 @@ import { BackButton, BigStat, IconBubble, Segmented } from "@/components/garden-
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
-    meta: [
-      { title: "پروفایل • Goldoon" },
-      { name: "description", content: "اطلاعات حساب و تنظیمات." },
-    ],
+    meta: [{ title: "Goldoon" }, { name: "description", content: "اطلاعات حساب و تنظیمات." }],
   }),
   loader: async ({ context }) => {
     await Promise.all([

@@ -14,7 +14,7 @@ export const Route = createFileRoute("/welcome")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "خوش اومدی • Goldoon" },
+      { title: "Goldoon" },
       { name: "description", content: "اسمی که گلدون باهاش صدات می‌کنه." },
     ],
   }),

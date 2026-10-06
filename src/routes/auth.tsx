@@ -13,7 +13,7 @@ export const Route = createFileRoute("/auth")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "ورود • Goldoon" },
+      { title: "Goldoon" },
       { name: "description", content: "وارد حساب کاربری خود شوید یا ثبت‌نام کنید." },
     ],
   }),
@@ -71,10 +71,6 @@ function AuthPage() {
   const [phone, setPhone] = useState<string | null>(null);
   const [code, setCode] = useState("");
   const [cooldown, setCooldown] = useState(0);
-
-  useEffect(() => {
-    document.title = mode === "login" ? "ورود • Goldoon" : "ثبت‌نام • Goldoon";
-  }, [mode]);
 
   useEffect(() => {
     if (cooldown <= 0) return;
