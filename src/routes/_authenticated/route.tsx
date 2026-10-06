@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_authenticated")({
 
 function AuthedLayout() {
   return (
-    <div className="relative min-h-screen pb-28">
+    <div className="relative min-h-screen pb-[120px]">
       <Outlet />
       <BottomNav />
     </div>

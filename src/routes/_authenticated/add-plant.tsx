@@ -1,7 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowRight, Camera, Minus, Plus, Sparkles } from "lucide-react";
+import { Camera, Droplet, Minus, Plus, Sparkles } from "lucide-react";
+import { Foliage } from "@/components/foliage";
+import { BackButton, BigStat, Segmented } from "@/components/garden-ui";
 import { useState } from "react";
 import { createPlant } from "@/lib/plants.functions";
 import { suggestWateringInterval } from "@/lib/suggest.functions";
@@ -110,89 +112,97 @@ function AddPlantPage() {
   };
 
   return (
-    <div className="px-5 pt-6">
-      <header className="mb-5 flex items-center gap-3">
-        <button
-          onClick={() => navigate({ to: "/home" })}
-          className="grid size-10 place-items-center rounded-full bg-card shadow-soft"
-        >
-          <ArrowRight className="size-5" />
-        </button>
-        <h1 className="flex-1 text-center text-lg font-bold text-primary">افزودن گیاه</h1>
-        <div className="size-10" />
+    <div className="px-4 pt-[18px]">
+      <header className="mb-5 flex items-center justify-between gap-3">
+        <BackButton onClick={() => navigate({ to: "/home" })} />
+        <Segmented value="new" options={[{ value: "new", label: "گیاه جدید" }]} />
       </header>
+      <h1 className="mb-3.5 text-2xl font-extrabold">افزودن گیاه</h1>
 
-      <form onSubmit={submit} className="space-y-4">
+      <form onSubmit={submit} className="space-y-3.5">
         <label className="block cursor-pointer">
           <input type="file" accept="image/*" onChange={handleFile} className="hidden" />
-          <div className="grid h-44 place-items-center rounded-3xl border-2 border-dashed border-brand-500 bg-brand-100 overflow-hidden">
+          <div className="hero-sand relative grid h-[190px] place-items-center overflow-hidden rounded-[30px]">
             {imageData ? (
               <img src={imageData} alt="گیاه" className="size-full object-cover" />
             ) : (
-              <div className="flex flex-col items-center gap-2 text-primary">
-                <div className="text-4xl">🌿</div>
-                <p className="text-sm">عکس گیاه را اضافه کنید</p>
-                <div className="grid size-11 place-items-center rounded-full bg-primary text-primary-foreground">
-                  <Camera className="size-5" />
+              <>
+                <Foliage />
+                <div className="relative flex flex-col items-center gap-2.5">
+                  <div className="grid size-[50px] place-items-center rounded-full bg-night text-white">
+                    <Camera className="size-5" />
+                  </div>
+                  <p className="text-sm font-semibold">عکس گیاه را اضافه کنید</p>
                 </div>
-              </div>
+              </>
             )}
           </div>
         </label>
 
-        <Field label="نام گیاه">
-          <input
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-xl border border-input bg-card px-4 py-3 text-sm outline-none focus:border-primary"
-          />
-        </Field>
+        <div className="glass-card space-y-3.5 rounded-[30px] p-4">
+          <Field label="نام گیاه">
+            <input
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="مثلاً پوتوس"
+              className={INPUT}
+            />
+          </Field>
 
-        <Field label="نام علمی">
-          <input
-            dir="ltr"
-            value={latin}
-            onChange={(e) => setLatin(e.target.value)}
-            className="w-full rounded-xl border border-input bg-card px-4 py-3 text-sm outline-none focus:border-primary"
-          />
-        </Field>
+          <Field label="نام علمی">
+            <input
+              dir="ltr"
+              value={latin}
+              onChange={(e) => setLatin(e.target.value)}
+              placeholder="Epipremnum aureum"
+              className={INPUT}
+            />
+          </Field>
 
-        <Field label="نوع گیاه">
-          <div className="grid grid-cols-4 gap-2">
-            {TYPES.map((t) => (
-              <button
-                key={t.v}
-                type="button"
-                onClick={() => setType(t.v)}
-                className={`rounded-full py-2 text-xs font-medium transition ${
-                  type === t.v
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-brand-100 text-primary"
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </Field>
+          <FieldGroup label="نوع گیاه">
+            <div className="flex flex-wrap gap-2">
+              {TYPES.map((t) => (
+                <Choice key={t.v} on={type === t.v} onClick={() => setType(t.v)}>
+                  {t.label}
+                </Choice>
+              ))}
+            </div>
+          </FieldGroup>
 
-        <Field label="دور آبیاری">
-          <div className="flex items-center gap-3">
+          <FieldGroup label="میزان نور">
+            <div className="flex flex-wrap gap-2">
+              {(["low", "medium", "high"] as const).map((l) => (
+                <Choice key={l} on={light === l} onClick={() => setLight(l)}>
+                  {l === "low" ? "کم" : l === "medium" ? "متوسط" : "زیاد"}
+                </Choice>
+              ))}
+            </div>
+          </FieldGroup>
+        </div>
+
+        <div className="glass-card rounded-[30px] p-4">
+          <h2 className="mb-3 flex items-center gap-2 text-base font-bold">
+            <span className="grid size-8 place-items-center rounded-full bg-brand-100 text-primary">
+              <Droplet className="size-4" />
+            </span>
+            دور آبیاری
+          </h2>
+          <div className="flex items-center justify-between gap-3">
             <button
               type="button"
               onClick={() => setInterval_((n) => Math.max(1, n - 1))}
-              className="grid size-10 place-items-center rounded-full bg-brand-100 text-primary"
+              aria-label="کم کردن"
+              className="grid size-11 place-items-center rounded-full border border-input bg-white"
             >
               <Minus className="size-4" />
             </button>
-            <div className="flex-1 rounded-xl bg-card border border-input py-3 text-center font-bold text-primary">
-              {toFa(interval)} روز
-            </div>
+            <BigStat value={toFa(interval)} unit="روز" className="flex-1 text-center" />
             <button
               type="button"
               onClick={() => setInterval_((n) => Math.min(60, n + 1))}
-              className="grid size-10 place-items-center rounded-full bg-brand-100 text-primary"
+              aria-label="زیاد کردن"
+              className="grid size-11 place-items-center rounded-full border border-input bg-white"
             >
               <Plus className="size-4" />
             </button>
@@ -201,61 +211,48 @@ function AddPlantPage() {
             type="button"
             onClick={handleSuggest}
             disabled={suggesting}
-            className="mt-2 flex w-full items-center justify-center gap-2 rounded-full border border-primary/30 bg-brand-100 py-2.5 text-xs font-medium text-primary disabled:opacity-60"
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-night py-2.5 text-[13px] font-semibold text-white disabled:opacity-60"
           >
-            <Sparkles className="size-4" />
-            {suggesting ? "در حال دریافت پیشنهاد..." : "پیشنهاد هوش مصنوعی ✨"}
+            <Sparkles className="size-4 text-[#F6C66B]" />
+            {suggesting ? "در حال دریافت پیشنهاد..." : "پیشنهاد هوش مصنوعی"}
           </button>
           {suggestReason && (
-            <p className="mt-2 rounded-xl bg-brand-100 px-3 py-2 text-[11px] leading-relaxed text-primary">
-              {suggestReason}
+            <p className="mt-2.5 flex gap-2 rounded-2xl bg-brand-100 px-3 py-2.5 text-xs leading-relaxed">
+              <span>✨</span>
+              <span>{suggestReason}</span>
             </p>
           )}
-        </Field>
+        </div>
 
-        <Field label="آخرین آبیاری">
-          <input
-            type="date"
-            dir="ltr"
-            value={lastWatered}
-            onChange={(e) => setLastWatered(e.target.value)}
-            className="w-full rounded-xl border border-input bg-card px-4 py-3 text-sm outline-none focus:border-primary"
-          />
-        </Field>
+        <div className="glass-card space-y-3.5 rounded-[30px] p-4">
+          <Field label="آخرین آبیاری">
+            <input
+              type="date"
+              dir="ltr"
+              value={lastWatered}
+              onChange={(e) => setLastWatered(e.target.value)}
+              className={INPUT}
+            />
+          </Field>
 
-        <Field label="میزان نور">
-          <div className="grid grid-cols-3 gap-2">
-            {(["low", "medium", "high"] as const).map((l) => (
-              <button
-                key={l}
-                type="button"
-                onClick={() => setLight(l)}
-                className={`rounded-full py-2 text-xs font-medium transition ${
-                  light === l ? "bg-primary text-primary-foreground" : "bg-brand-100 text-primary"
-                }`}
-              >
-                {l === "low" ? "کم" : l === "medium" ? "متوسط" : "زیاد"}
-              </button>
-            ))}
-          </div>
-        </Field>
-
-        <Field label="یادداشت">
-          <textarea
-            maxLength={200}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="h-24 w-full resize-none rounded-xl border border-input bg-card px-4 py-3 text-sm outline-none focus:border-primary"
-          />
-          <p className="mt-1 text-left text-[11px] text-muted-foreground fa-num">
-            {toFa(notes.length)}/{toFa(200)}
-          </p>
-        </Field>
+          <Field label="یادداشت">
+            <textarea
+              maxLength={200}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="مثلاً کنار پنجرهٔ آشپزخانه"
+              className={`${INPUT} h-[90px] resize-none`}
+            />
+            <p className="mt-1 text-left text-[11px] text-muted-foreground fa-num">
+              {toFa(notes.length)}/{toFa(200)}
+            </p>
+          </Field>
+        </div>
 
         <button
           disabled={loading}
           type="submit"
-          className="w-full rounded-full bg-primary py-3.5 text-sm font-semibold text-primary-foreground shadow-soft disabled:opacity-60"
+          className="mb-4 w-full rounded-full bg-primary py-[15px] text-[15px] font-semibold text-primary-foreground shadow-soft transition hover:bg-brand-900 disabled:opacity-60"
         >
           {loading ? "در حال ذخیره..." : "افزودن گیاه 🌱"}
         </button>
@@ -264,11 +261,45 @@ function AddPlantPage() {
   );
 }
 
+const INPUT =
+  "w-full rounded-2xl border border-input bg-white px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary";
+
+function Choice({
+  on,
+  onClick,
+  children,
+}: {
+  on: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`min-w-16 flex-1 rounded-[14px] border px-1 py-2 text-[13px] font-medium transition ${
+        on ? "border-primary bg-primary text-primary-foreground" : "border-input bg-white"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-sm font-medium text-primary">{label}</span>
+      <span className="mb-2 block text-[13px] font-semibold">{label}</span>
       {children}
     </label>
+  );
+}
+
+function FieldGroup({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div role="group" aria-label={label}>
+      <span className="mb-2 block text-[13px] font-semibold">{label}</span>
+      {children}
+    </div>
   );
 }

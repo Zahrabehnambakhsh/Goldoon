@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
-import { ArrowRight, Save, Gift, Cake } from "lucide-react";
+import { Save, Gift, Cake } from "lucide-react";
+import { BackButton, Segmented } from "@/components/garden-ui";
 import { getProfile, updateProfile } from "@/lib/plants.functions";
 import { toFa } from "@/lib/fa";
 import { toast } from "sonner";
@@ -21,7 +22,9 @@ function birthdayDiscount(birthDate: string | null | undefined): {
     next = new Date(now.getFullYear() + 1, m - 1, d);
   }
   const ms = 24 * 60 * 60 * 1000;
-  const daysUntil = Math.round((next.getTime() - Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())) / ms);
+  const daysUntil = Math.round(
+    (next.getTime() - Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())) / ms,
+  );
   if (daysUntil === 0) return { percent: 40, daysUntil, tier: "روز تولد 🎉" };
   if (daysUntil <= 7) return { percent: 25, daysUntil, tier: "هفته تولد" };
   if (daysUntil <= 30) return { percent: 15, daysUntil, tier: "ماه تولد" };
@@ -36,7 +39,10 @@ export const Route = createFileRoute("/_authenticated/account")({
     ],
   }),
   loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData({ queryKey: ["profile"], queryFn: () => getProfile() });
+    await context.queryClient.ensureQueryData({
+      queryKey: ["profile"],
+      queryFn: () => getProfile(),
+    });
   },
   component: AccountPage,
 });
@@ -44,7 +50,10 @@ export const Route = createFileRoute("/_authenticated/account")({
 function AccountPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const { data: profile } = useSuspenseQuery({ queryKey: ["profile"], queryFn: () => getProfile() });
+  const { data: profile } = useSuspenseQuery({
+    queryKey: ["profile"],
+    queryFn: () => getProfile(),
+  });
 
   const p = profile as {
     name?: string;
@@ -87,25 +96,21 @@ function AccountPage() {
   };
 
   return (
-    <div className="px-5 pt-6">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-lg font-bold text-primary">اطلاعات حساب</h1>
-        <button
-          onClick={() => navigate({ to: "/profile" })}
-          className="grid size-9 place-items-center rounded-full bg-card text-primary shadow-soft"
-          aria-label="بازگشت"
-        >
-          <ArrowRight className="size-4" />
-        </button>
-      </div>
+    <div className="px-4 pt-[18px]">
+      <header className="mb-5 flex items-center justify-between gap-3">
+        <BackButton onClick={() => navigate({ to: "/profile" })} />
+        <Segmented value="account" options={[{ value: "account", label: "حساب" }]} />
+      </header>
+      <h1 className="mb-3.5 text-2xl font-extrabold">اطلاعات حساب</h1>
 
-      <p className="mb-4 rounded-2xl bg-brand-100 p-3 text-xs leading-6 text-primary/80">
-        این اطلاعات برای شخصی‌سازی تجربه شماست. در آینده روی تاریخ تولد شما تخفیف تولد فعال می‌شود 🎁
+      <p className="mb-3.5 rounded-3xl bg-brand-100 p-3.5 text-xs leading-6">
+        این اطلاعات برای شخصی‌سازی تجربه شماست. در آینده روی تاریخ تولد شما تخفیف تولد فعال می‌شود
+        🎁
       </p>
 
-      <div className="mb-5 overflow-hidden rounded-2xl border border-primary/15 bg-gradient-to-br from-brand-100 to-card p-4 shadow-soft">
+      <div className="glass-card mb-3.5 overflow-hidden rounded-[30px] p-4">
         <div className="mb-3 flex items-center gap-2">
-          <span className="grid size-9 place-items-center rounded-full bg-primary text-primary-foreground">
+          <span className="grid size-10 place-items-center rounded-full bg-peach text-warn-ink">
             <Gift className="size-4" />
           </span>
           <div className="flex-1">
@@ -114,7 +119,7 @@ function AccountPage() {
           </div>
         </div>
 
-        <div className="flex items-end justify-between rounded-xl bg-card p-3">
+        <div className="flex items-end justify-between rounded-3xl bg-gradient-to-br from-[#FBF1E2] to-card p-3.5">
           <div>
             <p className="text-[11px] text-muted-foreground">تخفیف فعلی شما</p>
             <p className="text-3xl font-extrabold text-primary fa-num leading-tight">
@@ -131,28 +136,36 @@ function AccountPage() {
               <p className="text-xs font-bold text-primary">امروز تولدتونه! 🎂</p>
             ) : (
               <p className="text-[11px] text-primary/80">
-                <span className="fa-num font-bold text-primary">{toFa(discount.daysUntil)}</span> روز تا تولد
+                <span className="fa-num font-bold text-primary">{toFa(discount.daysUntil)}</span>{" "}
+                روز تا تولد
               </p>
             )}
           </div>
         </div>
 
         <ul className="mt-3 space-y-1 text-[11px] text-primary/80">
-          <li>🎉 روز تولد: <span className="fa-num font-bold">۴۰٪</span></li>
-          <li>🎁 هفته تولد (۷ روز): <span className="fa-num font-bold">۲۵٪</span></li>
-          <li>🌱 ماه تولد (۳۰ روز): <span className="fa-num font-bold">۱۵٪</span></li>
-          <li>💚 بقیه سال: <span className="fa-num font-bold">۱۰٪</span> پایه وفاداری</li>
+          <li>
+            🎉 روز تولد: <span className="fa-num font-bold">۴۰٪</span>
+          </li>
+          <li>
+            🎁 هفته تولد (۷ روز): <span className="fa-num font-bold">۲۵٪</span>
+          </li>
+          <li>
+            🌱 ماه تولد (۳۰ روز): <span className="fa-num font-bold">۱۵٪</span>
+          </li>
+          <li>
+            💚 بقیه سال: <span className="fa-num font-bold">۱۰٪</span> پایه وفاداری
+          </li>
         </ul>
       </div>
 
-
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form onSubmit={onSubmit} className="glass-card mb-6 space-y-3.5 rounded-[30px] p-4">
         <Field label="نام">
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="مثلاً زهرا"
-            className="w-full rounded-xl border border-border bg-card p-3 text-sm outline-none focus:border-primary"
+            className="w-full rounded-2xl border border-input bg-white px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary"
             maxLength={80}
           />
         </Field>
@@ -162,7 +175,7 @@ function AccountPage() {
             value={familyName}
             onChange={(e) => setFamilyName(e.target.value)}
             placeholder="مثلاً کریمی"
-            className="w-full rounded-xl border border-border bg-card p-3 text-sm outline-none focus:border-primary"
+            className="w-full rounded-2xl border border-input bg-white px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary"
             maxLength={80}
           />
         </Field>
@@ -173,7 +186,7 @@ function AccountPage() {
             value={birthDate ?? ""}
             onChange={(e) => setBirthDate(e.target.value)}
             dir="ltr"
-            className="w-full rounded-xl border border-border bg-card p-3 text-sm outline-none focus:border-primary"
+            className="w-full rounded-2xl border border-input bg-white px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary"
           />
           <p className="mt-1 text-[11px] text-muted-foreground">
             برای تخفیف تولد در نسخه پولی استفاده می‌شود.
@@ -187,7 +200,7 @@ function AccountPage() {
             onChange={(e) => setPhone(e.target.value)}
             placeholder="۰۹۱۲xxxxxxx"
             dir="ltr"
-            className="w-full rounded-xl border border-border bg-card p-3 text-sm outline-none focus:border-primary"
+            className="w-full rounded-2xl border border-input bg-white px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary"
             maxLength={20}
           />
         </Field>
@@ -195,7 +208,7 @@ function AccountPage() {
         <button
           type="submit"
           disabled={saving}
-          className="flex w-full items-center justify-center gap-2 rounded-full bg-primary p-3.5 text-sm font-semibold text-primary-foreground shadow-soft disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-primary py-[15px] text-[15px] font-semibold text-primary-foreground shadow-soft transition hover:bg-brand-900 disabled:opacity-60"
         >
           <Save className="size-4" />
           {saving ? "در حال ذخیره..." : "ذخیره اطلاعات"}
@@ -208,7 +221,7 @@ function AccountPage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-sm font-medium text-primary">{label}</span>
+      <span className="mb-2 block text-[13px] font-semibold">{label}</span>
       {children}
     </label>
   );

@@ -1,7 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Camera, Send } from "lucide-react";
+import { Camera, Send, Sparkles } from "lucide-react";
+import { Foliage } from "@/components/foliage";
+import { BackButton, Segmented } from "@/components/garden-ui";
 import { useEffect, useRef, useState } from "react";
 import { sendChat, getChatHistory } from "@/lib/chat.functions";
 import { toast } from "sonner";
@@ -28,6 +30,8 @@ function DiagnosePage() {
   const [image, setImage] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   const { data: messages = [] } = useQuery({
     queryKey: ["chat", SESSION_ID],
@@ -75,61 +79,80 @@ function DiagnosePage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col px-5 pt-6">
-      <h1 className="mb-4 text-center text-lg font-bold text-primary">تشخیص هوشمند 🌱</h1>
+    <div className="flex min-h-screen flex-col px-4 pt-[18px]">
+      <header className="mb-5 flex items-center justify-between gap-3">
+        <BackButton onClick={() => navigate({ to: "/home" })} />
+        <Segmented
+          value="photo"
+          options={[
+            { value: "photo", label: "عکس" },
+            { value: "chat", label: "گفتگو" },
+          ]}
+          onChange={(v) => {
+            if (v === "chat") inputRef.current?.focus();
+          }}
+        />
+      </header>
+      <h1 className="mb-3.5 text-2xl font-extrabold">تشخیص هوشمند</h1>
 
       {/* Upload */}
-      <label className="mb-4 block cursor-pointer">
+      <label className="mb-3.5 block cursor-pointer">
         <input type="file" accept="image/*" onChange={handleFile} className="hidden" />
-        <div className="grid h-40 place-items-center rounded-3xl bg-primary text-primary-foreground shadow-soft overflow-hidden">
+        <div className="relative grid h-[230px] place-items-center overflow-hidden rounded-[30px] border-2 border-white/80 bg-[radial-gradient(80%_70%_at_50%_60%,#D7EACB_0%,#EFE8DA_70%)] shadow-soft">
           {image ? (
-            <img src={image} alt="گیاه" className="size-full object-cover" />
+            <img src={image} alt="گیاه" className="absolute inset-0 size-full object-cover" />
           ) : (
-            <div className="flex flex-col items-center gap-2">
-              <Camera className="size-8" />
-              <p className="text-sm">عکس گیاه را آپلود کن</p>
-              <span className="rounded-full border border-white/30 bg-white/10 px-4 py-1.5 text-xs backdrop-blur-md">
-                انتخاب عکس
+            <>
+              <Foliage />
+              <div className="absolute right-3.5 top-3.5 flex gap-1.5">
+                <span className="rounded-full bg-lilac px-2.5 py-0.5 text-[11px] font-medium">
+                  برگ
+                </span>
+                <span className="rounded-full bg-brand-100 px-2.5 py-0.5 text-[11px] font-medium">
+                  خاک
+                </span>
+                <span className="rounded-full bg-warn-soft px-2.5 py-0.5 text-[11px] font-medium text-warn-ink">
+                  آفت
+                </span>
+              </div>
+              <span className="relative text-[92px] leading-none drop-shadow-[0_14px_18px_rgba(46,90,59,0.25)]">
+                🪴
               </span>
-            </div>
+            </>
           )}
+          <span className="absolute bottom-3.5 left-1/2 inline-flex -translate-x-1/2 items-center gap-2 whitespace-nowrap rounded-full bg-night px-4 py-2 text-[13px] font-semibold text-white">
+            <Camera className="size-4" />
+            {image ? "عکس دیگه" : "عکس گیاه را آپلود کن"}
+          </span>
         </div>
       </label>
 
       {/* Chat */}
       <div
         ref={scrollRef}
-        className="mb-4 flex-1 space-y-2.5 overflow-y-auto rounded-2xl bg-card/50 p-3 max-h-[45vh]"
+        className="glass-card mb-3 flex max-h-[42vh] min-h-[150px] flex-1 flex-col gap-2.5 overflow-y-auto rounded-[30px] p-3.5"
       >
         {messages.length === 0 && !sending && (
-          <p className="py-6 text-center text-sm text-muted-foreground">
+          <p className="m-auto text-center text-sm text-muted-foreground">
             یه عکس آپلود کن یا سوالت رو بپرس!
           </p>
         )}
         {messages.map((m) => (
           <div
             key={m.id}
-            className={`flex ${m.role === "user" ? "justify-start" : "justify-end"}`}
+            className={`max-w-[82%] rounded-[20px] px-3.5 py-2.5 text-sm ${
+              m.role === "user"
+                ? "self-start rounded-tr-md bg-primary text-primary-foreground"
+                : "self-end rounded-tl-md border border-[#EEE6D8] bg-white"
+            }`}
           >
-            <div
-              className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm ${
-                m.role === "user"
-                  ? "bg-primary text-primary-foreground"
-                  : "border border-border bg-card text-primary"
-              }`}
-            >
-              {m.image_url && (
-                <img src={m.image_url} alt="" className="mb-2 max-h-40 rounded-xl" />
-              )}
-              <p className="whitespace-pre-wrap">{m.content}</p>
-            </div>
+            {m.image_url && <img src={m.image_url} alt="" className="mb-2 max-h-40 rounded-2xl" />}
+            <p className="whitespace-pre-wrap">{m.content}</p>
           </div>
         ))}
         {sending && (
-          <div className="flex justify-end">
-            <div className="rounded-2xl border border-border bg-card px-4 py-2.5 text-sm text-muted-foreground">
-              در حال فکر کردن...
-            </div>
+          <div className="self-end rounded-[20px] rounded-tl-md border border-[#EEE6D8] bg-white px-4 py-2.5 text-sm text-muted-foreground">
+            در حال فکر کردن...
           </div>
         )}
       </div>
@@ -141,7 +164,7 @@ function DiagnosePage() {
             key={s}
             onClick={() => send(s)}
             disabled={sending}
-            className="rounded-full border border-border bg-card px-3 py-1.5 text-xs text-primary shadow-soft disabled:opacity-50"
+            className="glass-card rounded-full px-3.5 py-1.5 text-xs font-medium disabled:opacity-50"
           >
             {s}
           </button>
@@ -154,20 +177,23 @@ function DiagnosePage() {
           e.preventDefault();
           send(input);
         }}
-        className="flex items-center gap-2"
+        className="glass-card mb-4 flex items-center gap-2 rounded-full py-1.5 pe-1.5 ps-4"
       >
+        <Sparkles className="size-4 shrink-0 text-[#E3A23A]" />
         <input
+          ref={inputRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="سوالت رو بپرس..."
-          className="flex-1 rounded-full border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary"
+          className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
         />
         <button
           disabled={sending}
           type="submit"
-          className="grid size-11 place-items-center rounded-full bg-primary text-primary-foreground shadow-soft disabled:opacity-50"
+          aria-label="ارسال"
+          className="grid size-[42px] shrink-0 place-items-center rounded-full bg-night text-white disabled:opacity-50"
         >
-          <Send className="size-4 -rotate-180" />
+          <Send className="size-4 -scale-x-100" />
         </button>
       </form>
     </div>

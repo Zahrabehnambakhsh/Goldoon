@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Leaf } from "lucide-react";
+import { Foliage } from "@/components/foliage";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -59,87 +60,84 @@ function AuthPage() {
     }
   };
 
+  const input =
+    "w-full rounded-2xl border border-input bg-white px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary";
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-6 py-10">
-      <div className="mb-6 flex flex-col items-center gap-3">
-        <div className="grid size-16 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-soft">
-          <Leaf className="size-8" />
+    <div className="flex min-h-screen flex-col gap-3.5 px-4 py-6">
+      <section className="hero-sand relative flex min-h-[300px] flex-col overflow-hidden rounded-[34px] px-5 pt-[22px]">
+        <Foliage />
+        <div className="relative mb-3.5 grid size-14 place-items-center rounded-[18px] bg-night text-white">
+          <Leaf className="size-7" />
         </div>
-        <h1 className="text-2xl font-bold text-primary">Goldoon</h1>
-        <p className="text-sm text-muted-foreground">گیاهانت رو هوشمند نگه‌دار</p>
-      </div>
+        <h1 className="relative text-[34px] font-extrabold leading-tight">Goldoon</h1>
+        <p className="relative mt-1 text-[15px]">گیاهانت رو هوشمند نگه‌دار</p>
+      </section>
 
-      <form
-        onSubmit={handleSubmit}
-        className="w-full rounded-3xl bg-card p-6 shadow-soft border border-border/60"
-      >
-        <div className="mb-4 flex rounded-full bg-muted p-1">
-          <button
-            type="button"
-            onClick={() => setMode("login")}
-            className={`flex-1 rounded-full py-2 text-sm font-medium transition ${
-              mode === "login" ? "bg-primary text-primary-foreground" : "text-primary"
-            }`}
-          >
-            ورود
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode("register")}
-            className={`flex-1 rounded-full py-2 text-sm font-medium transition ${
-              mode === "register" ? "bg-primary text-primary-foreground" : "text-primary"
-            }`}
-          >
-            ثبت‌نام
-          </button>
+      <form onSubmit={handleSubmit} className="glass-card rounded-[30px] p-[18px]">
+        <div className="mb-3.5 flex rounded-2xl bg-[#F1EADC] p-1">
+          {(["login", "register"] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setMode(m)}
+              className={`flex-1 rounded-xl py-2 text-[13px] font-semibold transition ${
+                mode === m ? "bg-primary text-primary-foreground" : "text-foreground"
+              }`}
+            >
+              {m === "login" ? "ورود" : "ثبت‌نام"}
+            </button>
+          ))}
         </div>
 
-        {mode === "register" && (
-          <label className="mb-3 block">
-            <span className="mb-1 block text-sm font-medium">نام</span>
+        <div className="space-y-3.5">
+          {mode === "register" && (
+            <label className="block">
+              <span className="mb-2 block text-[13px] font-semibold">نام</span>
+              <input
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className={input}
+                placeholder="نام و نام خانوادگی"
+              />
+            </label>
+          )}
+
+          <label className="block">
+            <span className="mb-2 block text-[13px] font-semibold">ایمیل</span>
             <input
               required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none focus:border-primary"
-              placeholder="نام و نام خانوادگی"
+              type="email"
+              dir="ltr"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={input}
+              placeholder="you@example.com"
             />
           </label>
-        )}
 
-        <label className="mb-3 block">
-          <span className="mb-1 block text-sm font-medium">ایمیل</span>
-          <input
-            required
-            type="email"
-            dir="ltr"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none focus:border-primary"
-            placeholder="you@example.com"
-          />
-        </label>
+          <label className="block">
+            <span className="mb-2 block text-[13px] font-semibold">رمز عبور</span>
+            <input
+              required
+              minLength={6}
+              type="password"
+              value={pw}
+              onChange={(e) => setPw(e.target.value)}
+              className={input}
+              placeholder="حداقل ۶ کاراکتر"
+            />
+          </label>
 
-        <label className="mb-5 block">
-          <span className="mb-1 block text-sm font-medium">رمز عبور</span>
-          <input
-            required
-            minLength={6}
-            type="password"
-            value={pw}
-            onChange={(e) => setPw(e.target.value)}
-            className="w-full rounded-xl border border-input bg-background px-4 py-3 text-sm outline-none focus:border-primary"
-            placeholder="حداقل ۶ کاراکتر"
-          />
-        </label>
-
-        <button
-          disabled={loading}
-          type="submit"
-          className="w-full rounded-full bg-primary py-3 text-sm font-semibold text-primary-foreground shadow-soft transition hover:bg-brand-800 disabled:opacity-60"
-        >
-          {loading ? "در حال ارسال..." : mode === "login" ? "ورود" : "ثبت‌نام"}
-        </button>
+          <button
+            disabled={loading}
+            type="submit"
+            className="w-full rounded-full bg-primary py-[15px] text-[15px] font-semibold text-primary-foreground shadow-soft transition hover:bg-brand-900 disabled:opacity-60"
+          >
+            {loading ? "در حال ارسال..." : mode === "login" ? "ورود" : "ثبت‌نام"}
+          </button>
+        </div>
       </form>
     </div>
   );

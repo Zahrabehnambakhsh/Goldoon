@@ -1,4 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { Droplet } from "lucide-react";
+import { BackButton, BigStat, IconBubble, Segmented } from "@/components/garden-ui";
 import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listPlants, waterPlant } from "@/lib/plants.functions";
@@ -17,102 +20,140 @@ export const Route = createFileRoute("/_authenticated/reminders")({
   component: Reminders,
 });
 
+const DAY_LONG = ["یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه"]; // by Date.getDay()
+
 function Reminders() {
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const waterFn = useServerFn(waterPlant);
   const { data: plants } = useSuspenseQuery({ queryKey: ["plants"], queryFn: () => listPlants() });
+  const [tab, setTab] = useState<"day" | "week">("day");
   const today = new Date();
 
-  const dueToday = plants
-    .map((p) => ({
-      ...p,
-      daysLeft: p.watering_interval_days - daysBetween(today, new Date(p.last_watered)),
-    }))
-    .filter((p) => p.daysLeft <= 0);
+  const withLeft = plants.map((p) => ({
+    ...p,
+    daysLeft: p.watering_interval_days - daysBetween(today, new Date(p.last_watered)),
+  }));
+  const dueToday = withLeft.filter((p) => p.daysLeft <= 0).sort((a, b) => a.daysLeft - b.daysLeft);
+  const upcoming = withLeft.filter((p) => p.daysLeft > 0 && p.daysLeft <= 7);
 
-  const upcoming = plants
-    .map((p) => ({
-      ...p,
-      daysLeft: p.watering_interval_days - daysBetween(today, new Date(p.last_watered)),
-    }))
-    .filter((p) => p.daysLeft > 0 && p.daysLeft <= 7)
-    .sort((a, b) => a.daysLeft - b.daysLeft);
+  const groups = Array.from({ length: 7 }, (_, i) => i + 1)
+    .map((k) => {
+      const d = new Date(today);
+      d.setDate(d.getDate() + k);
+      return { k, day: DAY_LONG[d.getDay()], items: upcoming.filter((p) => p.daysLeft === k) };
+    })
+    .filter((g) => g.items.length > 0);
 
   const handleWater = async (id: string) => {
     try {
       await waterFn({ data: { id } });
       qc.invalidateQueries({ queryKey: ["plants"] });
-      toast.success("آبیاری ثبت شد ✅");
+      toast.success("آبیاری ثبت شد 💧");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "خطا");
     }
   };
 
-  const dayName = (d: number) => {
-    const dt = new Date();
-    dt.setDate(dt.getDate() + d);
-    return new Intl.DateTimeFormat("fa-IR", { weekday: "long" }).format(dt);
-  };
-
   return (
-    <div className="px-5 pt-6">
-      <h1 className="mb-6 text-center text-lg font-bold text-primary">یادآورها ⏰</h1>
+    <div className="px-4 pt-[18px]">
+      <header className="mb-5 flex items-center justify-between gap-3">
+        <BackButton onClick={() => navigate({ to: "/home" })} />
+        <Segmented
+          value={tab}
+          onChange={setTab}
+          options={[
+            { value: "day", label: "امروز" },
+            { value: "week", label: "هفته" },
+          ]}
+        />
+      </header>
+      <h1 className="mb-3.5 text-2xl font-extrabold">یادآورها</h1>
 
-      <section className="mb-6">
-        <h2 className="mb-3 text-base font-bold text-primary">امروز</h2>
-        {dueToday.length === 0 ? (
-          <div className="rounded-2xl bg-brand-100 p-5 text-center text-sm text-primary">
+      <div className="mb-3.5 grid grid-cols-2 gap-3">
+        <div className="glass-card flex flex-col gap-3.5 rounded-3xl p-3.5">
+          <div className="flex items-center gap-2 text-[13px] font-semibold">
+            <IconBubble tone="peach">💧</IconBubble>
+            امروز
+          </div>
+          <BigStat value={toFa(dueToday.length)} unit="گیاه" label="باید آب بخورن" />
+        </div>
+        <div className="glass-card flex flex-col gap-3.5 rounded-3xl p-3.5">
+          <div className="flex items-center gap-2 text-[13px] font-semibold">
+            <IconBubble tone="mint">🗓️</IconBubble>
+            هفته آینده
+          </div>
+          <BigStat value={toFa(upcoming.length)} unit="گیاه" label="در برنامه" />
+        </div>
+      </div>
+
+      {tab === "day" ? (
+        dueToday.length === 0 ? (
+          <div className="glass-card rounded-3xl p-6 text-center text-sm">
             امروز آبیاری‌ای نداری! 🎉
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {dueToday.map((p) => (
-              <div
-                key={p.id}
-                className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-soft"
-              >
-                <div className="grid size-11 place-items-center rounded-2xl bg-brand-100 text-xl">
+              <div key={p.id} className="glass-card flex items-center gap-3 rounded-3xl p-3">
+                <span
+                  className={`grid size-12 shrink-0 place-items-center rounded-full text-[22px] ${
+                    p.daysLeft < 0 ? "bg-peach" : "bg-brand-100"
+                  }`}
+                >
                   {plantEmoji(p.type)}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[15px] font-bold">{p.name}</p>
+                  {p.daysLeft < 0 ? (
+                    <p className="text-xs font-semibold text-warn-ink fa-num">
+                      {toFa(-p.daysLeft)} روز تأخیر
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">امروز وقت آبیاریه</p>
+                  )}
                 </div>
-                <p className="flex-1 font-semibold text-primary">{p.name}</p>
                 <button
                   onClick={() => handleWater(p.id)}
-                  className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-[13px] font-semibold text-primary-foreground transition hover:bg-brand-900"
                 >
-                  آبیاری کن
+                  <Droplet className="size-4" />
+                  آبیاری
                 </button>
               </div>
             ))}
           </div>
-        )}
-      </section>
-
-      <section className="mb-6">
-        <h2 className="mb-3 text-base font-bold text-primary">هفته آینده</h2>
-        {upcoming.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border p-5 text-center text-sm text-muted-foreground">
-            چیزی برای هفته آینده نداری.
-          </div>
-        ) : (
-          <ul className="space-y-2">
-            {upcoming.map((p) => (
-              <li
-                key={p.id}
-                className="flex items-center gap-3 rounded-2xl bg-card border border-border p-3"
-              >
-                <span className="text-lg">{plantEmoji(p.type)}</span>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-primary">{p.name}</p>
-                  <p className="text-[11px] text-muted-foreground">{dayName(p.daysLeft)}</p>
+        )
+      ) : groups.length === 0 ? (
+        <div className="glass-card rounded-3xl p-6 text-center text-sm">
+          چیزی برای هفته آینده نداری.
+        </div>
+      ) : (
+        <div className="space-y-2.5">
+          {groups.map((g) => (
+            <div key={g.k} className="glass-card rounded-3xl p-3.5">
+              <h2 className="mb-2.5 flex items-center justify-between text-sm font-bold">
+                {g.day}
+                <small className="text-[11px] font-medium text-muted-foreground fa-num">
+                  {g.k === 1 ? "فردا" : `${toFa(g.k)} روز دیگر`}
+                </small>
+              </h2>
+              {g.items.map((p, idx) => (
+                <div
+                  key={p.id}
+                  className={`flex items-center gap-2.5 py-2 ${idx ? "border-t border-dashed border-input" : "pt-0"}`}
+                >
+                  <span className="text-lg">{plantEmoji(p.type)}</span>
+                  <p className="flex-1 truncate text-sm font-semibold">{p.name}</p>
+                  <span className="rounded-full bg-brand-100 px-2.5 py-0.5 text-[11px] font-medium fa-num">
+                    هر {toFa(p.watering_interval_days)} روز
+                  </span>
                 </div>
-                <span className="rounded-full bg-brand-100 px-3 py-1 text-[11px] font-bold text-primary fa-num">
-                  {toFa(p.daysLeft)} روز
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
