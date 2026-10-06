@@ -1,40 +1,20 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 
-export function createLovableAiGatewayProvider(lovableApiKey: string) {
-  return createOpenAICompatible({
-    name: "lovable",
-    baseURL: "https://ai.gateway.lovable.dev/v1",
-    headers: {
-      "Lovable-API-Key": lovableApiKey,
-      "X-Lovable-AIG-SDK": "vercel-ai-sdk",
-    },
-  });
-}
-
-// Google's OpenAI-compatible endpoint; works with a Gemini API key from aistudio.google.com.
-const DEFAULT_AI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai";
-const DEFAULT_AI_MODEL = "gemini-2.5-flash";
-
-/**
- * Picks the AI model from the environment.
- * - AI_API_KEY set: any OpenAI-compatible provider (AI_BASE_URL / AI_MODEL override the Gemini defaults).
- * - otherwise LOVABLE_API_KEY: Lovable's AI gateway (only available when hosted on Lovable).
- */
+// Any OpenAI-compatible API works: OpenAI, OpenRouter, Google Gemini, Groq, a local Ollama, ...
+// Configure via environment variables:
+//   AI_API_KEY   (required) API key of the provider
+//   AI_BASE_URL  (optional) defaults to Google Gemini, which has a free tier
+//   AI_MODEL     (optional) defaults to gemini-flash-latest; must support images for the diagnose chat
 export function getAiModel() {
   const apiKey = process.env.AI_API_KEY;
-  if (apiKey) {
-    const provider = createOpenAICompatible({
-      name: "custom",
-      baseURL: process.env.AI_BASE_URL || DEFAULT_AI_BASE_URL,
-      apiKey,
-    });
-    return provider(process.env.AI_MODEL || DEFAULT_AI_MODEL);
-  }
+  if (!apiKey) throw new Error("AI_API_KEY missing");
 
-  const lovableKey = process.env.LOVABLE_API_KEY;
-  if (lovableKey) {
-    return createLovableAiGatewayProvider(lovableKey)("google/gemini-3.6-flash");
-  }
-
-  throw new Error("کلید هوش مصنوعی تنظیم نشده (AI_API_KEY یا LOVABLE_API_KEY)");
+  const provider = createOpenAICompatible({
+    name: "ai",
+    // Lets the watering suggestion get JSON in one request instead of failing over to a second one.
+    supportsStructuredOutputs: true,
+    baseURL: process.env.AI_BASE_URL || "https://generativelanguage.googleapis.com/v1beta/openai",
+    apiKey,
+  });
+  return provider(process.env.AI_MODEL || "gemini-flash-latest");
 }

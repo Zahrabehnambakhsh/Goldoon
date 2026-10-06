@@ -5,7 +5,7 @@ import { getAiModel } from "./ai-gateway.server";
 import { generateText } from "ai";
 
 const SYSTEM_PROMPT =
-  "تو یک متخصص گیاه‌شناس دلسوز هستی. به سوالات کاربر درباره گیاهان کاملاً به زبان فارسی پاسخ بده. اگر عکسی همراه پیام هست، آن را با دقت تحلیل کن و نام گیاه، وضعیت سلامت، بیماری‌های احتمالی و راهکار مراقبت را بگو. پاسخ‌هایت را کوتاه، دوستانه و کاربردی نگه دار.";
+  "تو یک متخصص گیاه‌شناس دلسوز هستی. به سوالات کاربر درباره گیاهان کاملاً به زبان فارسی پاسخ بده. اگر عکسی همراه پیام هست، آن را با دقت تحلیل کن و نام گیاه، وضعیت سلامت، بیماری‌های احتمالی و راهکار مراقبت را بگو. پاسخ‌هایت را کوتاه، دوستانه و کاربردی نگه دار. از Markdown (مثل ** یا #) استفاده نکن و متن ساده بنویس؛ برای فهرست از شماره‌های ۱، ۲، ۳ استفاده کن.";
 
 const ChatInput = z.object({
   session_id: z.string().min(1).max(64),
@@ -37,9 +37,7 @@ export const sendChat = createServerFn({ method: "POST" })
       .order("created_at", { ascending: true })
       .limit(30);
 
-    const messages: Array<{ role: "system" | "user" | "assistant"; content: unknown }> = [
-      { role: "system", content: SYSTEM_PROMPT },
-    ];
+    const messages: Array<{ role: "user" | "assistant"; content: unknown }> = [];
     for (const m of history ?? []) {
       if (m.role === "user" && m.image_url) {
         messages.push({
@@ -57,6 +55,7 @@ export const sendChat = createServerFn({ method: "POST" })
     try {
       const { text } = await generateText({
         model,
+        instructions: SYSTEM_PROMPT,
         // @ts-expect-error - multimodal messages typed loosely
         messages,
       });
