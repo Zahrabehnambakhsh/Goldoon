@@ -1,6 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import {
   Bell,
   Search,
@@ -14,12 +13,13 @@ import {
   Sparkles,
   ScanSearch,
 } from "lucide-react";
-import { listPlants, waterPlant, getProfile, getWateringStats } from "@/lib/plants.functions";
+import { listPlants, getProfile, getWateringStats } from "@/lib/plants.functions";
+import { useWaterAction } from "@/lib/use-water";
+import { overwaterInfo } from "@/lib/watering";
 import { toFa, daysBetween, localIso, wateringStreak, addressName } from "@/lib/fa";
 import { HeroPlant, PlantIcon } from "@/components/flat-art";
 import { Foliage } from "@/components/foliage";
 import { SquareButton, BigStat } from "@/components/garden-ui";
-import { toast } from "sonner";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/home")({
@@ -53,8 +53,6 @@ const DAY_SHORT = ["ی", "د", "س", "چ", "پ", "ج", "ش"]; // indexed by Date
 
 function HomePage() {
   const navigate = useNavigate();
-  const qc = useQueryClient();
-  const waterFn = useServerFn(waterPlant);
   const [q, setQ] = useState("");
 
   const { data: plants } = useSuspenseQuery({ queryKey: ["plants"], queryFn: () => listPlants() });
@@ -101,16 +99,7 @@ function HomePage() {
   });
   const maxCount = Math.max(3, ...week.map((w) => w.count));
 
-  const handleWater = async (id: string) => {
-    try {
-      await waterFn({ data: { id } });
-      qc.invalidateQueries({ queryKey: ["plants"] });
-      qc.invalidateQueries({ queryKey: ["waterings"] });
-      toast.success("آبیاری ثبت شد");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "خطا");
-    }
-  };
+  const water = useWaterAction();
 
   return (
     <div className="px-4 pt-[18px]">
@@ -295,14 +284,20 @@ function HomePage() {
               </div>
             )}
             {filtered.map((p) => {
-              const due = p.daysLeft <= 0;
-              const late = p.daysLeft < 0;
+              const ow = overwaterInfo(p, today);
+              const over = ow.overwatered;
+              const due = !over && p.daysLeft <= 0;
+              const late = !over && p.daysLeft < 0;
               const pct = Math.max(0, Math.min(100, (p.daysLeft / p.watering_interval_days) * 100));
               return (
                 <div
                   key={p.id}
                   className={`glass-card flex min-w-0 flex-col gap-2.5 rounded-3xl p-3.5 ${
-                    due ? "!bg-gradient-to-br from-warn-soft/95 to-[#FFFFFF]/90" : ""
+                    over
+                      ? "!border-[#F6C9C9] !bg-gradient-to-br from-[#FDE4E4] to-[#FFFFFF]/90"
+                      : due
+                        ? "!bg-gradient-to-br from-warn-soft/95 to-[#FFFFFF]/90"
+                        : ""
                   }`}
                 >
                   <Link
@@ -314,7 +309,7 @@ function HomePage() {
                     <div className="flex min-w-0 items-center gap-2">
                       <span
                         className={`grid size-10 shrink-0 place-items-center overflow-hidden rounded-full text-lg ${
-                          due ? "bg-peach" : "bg-brand-100"
+                          over ? "bg-[#FDE4E4]" : due ? "bg-peach" : "bg-brand-100"
                         }`}
                       >
                         {p.image_url ? (
@@ -336,7 +331,13 @@ function HomePage() {
                       </div>
                     </div>
 
-                    {late ? (
+                    {over ? (
+                      <BigStat
+                        value="زیادی!"
+                        label={`زیاد آب دادی؛ ${toFa(ow.waitDays)} روز آب نده`}
+                        className="text-[#D64545]"
+                      />
+                    ) : late ? (
                       <BigStat
                         value={toFa(-p.daysLeft)}
                         unit="روز"
@@ -354,7 +355,11 @@ function HomePage() {
                     <div className="flex min-w-0 flex-wrap gap-1">
                       <span
                         className={`whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                          due ? "bg-warn-soft text-warn-ink" : "bg-brand-100"
+                          over
+                            ? "bg-[#FDE4E4] text-[#C93C3C]"
+                            : due
+                              ? "bg-warn-soft text-warn-ink"
+                              : "bg-brand-100"
                         }`}
                       >
                         {TYPE_FA[p.type ?? "indoor"] ?? "گیاه"}
@@ -368,7 +373,8 @@ function HomePage() {
                     <WaterButton
                       pct={pct}
                       due={due}
-                      onClick={() => handleWater(p.id)}
+                      over={over}
+                      onClick={() => water(p.id, p.name)}
                       name={p.name}
                     />
                   </div>
@@ -404,11 +410,13 @@ function HomePage() {
 function WaterButton({
   pct,
   due,
+  over,
   onClick,
   name,
 }: {
   pct: number;
   due: boolean;
+  over: boolean;
   onClick: () => void;
   name: string;
 }) {
@@ -419,7 +427,9 @@ function WaterButton({
       onClick={onClick}
       title="ثبت آبیاری"
       aria-label={`ثبت آبیاری ${name}`}
-      className="relative grid size-[34px] shrink-0 place-items-center rounded-full bg-night text-white"
+      className={`relative grid size-[34px] shrink-0 place-items-center rounded-full text-white transition-colors ${
+        over ? "bg-[#E5484D]" : "bg-night"
+      }`}
     >
       <svg viewBox="0 0 42 42" className="absolute -inset-1 size-[42px] -rotate-90">
         <circle cx="21" cy="21" r={r} strokeWidth="3" className="fill-none stroke-foreground/10" />
@@ -429,7 +439,9 @@ function WaterButton({
           r={r}
           strokeWidth="3"
           strokeLinecap="round"
-          className={`fill-none transition-[stroke-dashoffset] ${due ? "stroke-warn" : "stroke-primary"}`}
+          className={`fill-none transition-[stroke-dashoffset] ${
+            over ? "stroke-[#E5484D]" : due ? "stroke-warn" : "stroke-primary"
+          }`}
           strokeDasharray={c}
           strokeDashoffset={c - (pct / 100) * c}
         />

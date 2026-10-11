@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { isTooSoon } from "./watering";
 
 const PlantInput = z.object({
   name: z.string().min(1).max(80),
@@ -42,15 +43,77 @@ export const waterPlant = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const today = new Date().toISOString().slice(0, 10);
+
+    const { data: plant, error: readError } = await context.supabase
+      .from("plants")
+      .select("watering_interval_days, last_watered, overwatered_on")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (readError) throw new Error(readError.message);
+    if (!plant) throw new Error("گیاه پیدا نشد");
+
+    // When was it last watered? Prefer the exact time from the log; fall back to the date.
+    const { data: lastLog } = await context.supabase
+      .from("watering_logs")
+      .select("created_at")
+      .eq("plant_id", data.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const lastAt = lastLog?.created_at
+      ? new Date(lastLog.created_at)
+      : new Date(`${plant.last_watered}T12:00:00Z`);
+    const overwatered = isTooSoon(plant.watering_interval_days, lastAt, new Date());
+
     const { error } = await context.supabase
       .from("plants")
-      .update({ last_watered: today })
+      .update({ last_watered: today, overwatered_on: overwatered ? today : null })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
     // History is best-effort: watering still counts if the log table isn't available yet.
     await context.supabase
       .from("watering_logs")
       .insert({ user_id: context.userId, plant_id: data.id, watered_on: today });
+
+    return {
+      ok: true,
+      overwatered,
+      waitDays: plant.watering_interval_days,
+      // Lets the client undo an accidental tap.
+      previous: { last_watered: plant.last_watered, overwatered_on: plant.overwatered_on },
+    };
+  });
+
+/** Undoes the latest watering of a plant (for accidental taps). */
+export const undoWatering = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        last_watered: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        overwatered_on: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/)
+          .nullable(),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: lastLog } = await context.supabase
+      .from("watering_logs")
+      .select("id")
+      .eq("plant_id", data.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (lastLog) await context.supabase.from("watering_logs").delete().eq("id", lastLog.id);
+
+    const { error } = await context.supabase
+      .from("plants")
+      .update({ last_watered: data.last_watered, overwatered_on: data.overwatered_on })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
     return { ok: true };
   });
 

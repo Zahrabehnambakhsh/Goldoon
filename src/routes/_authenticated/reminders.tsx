@@ -2,12 +2,11 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Droplet, CalendarDays } from "lucide-react";
 import { BackButton, BigStat, IconBubble, Segmented } from "@/components/garden-ui";
-import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
-import { listPlants, waterPlant } from "@/lib/plants.functions";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { listPlants } from "@/lib/plants.functions";
+import { useWaterAction } from "@/lib/use-water";
 import { toFa, daysBetween } from "@/lib/fa";
 import { PlantIcon } from "@/components/flat-art";
-import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/reminders")({
   head: () => ({
@@ -25,8 +24,7 @@ const DAY_LONG = ["یکشنبه", "دوشنبه", "سه‌شنبه", "چهارش
 
 function Reminders() {
   const navigate = useNavigate();
-  const qc = useQueryClient();
-  const waterFn = useServerFn(waterPlant);
+  const water = useWaterAction();
   const { data: plants } = useSuspenseQuery({ queryKey: ["plants"], queryFn: () => listPlants() });
   const [tab, setTab] = useState<"day" | "week">("day");
   const today = new Date();
@@ -45,16 +43,6 @@ function Reminders() {
       return { k, day: DAY_LONG[d.getDay()], items: upcoming.filter((p) => p.daysLeft === k) };
     })
     .filter((g) => g.items.length > 0);
-
-  const handleWater = async (id: string) => {
-    try {
-      await waterFn({ data: { id } });
-      qc.invalidateQueries({ queryKey: ["plants"] });
-      toast.success("آبیاری ثبت شد");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "خطا");
-    }
-  };
 
   return (
     <div className="px-4 pt-[18px]">
@@ -119,7 +107,7 @@ function Reminders() {
                   )}
                 </div>
                 <button
-                  onClick={() => handleWater(p.id)}
+                  onClick={() => water(p.id, p.name)}
                   className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-[13px] font-semibold text-primary-foreground transition hover:bg-brand-900"
                 >
                   <Droplet className="size-4" />

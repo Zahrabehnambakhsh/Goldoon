@@ -55,6 +55,7 @@ export type Database = {
           location: string | null
           name: string
           notes: string | null
+          overwatered_on: string | null
           type: string | null
           user_id: string
           watering_interval_days: number
@@ -69,6 +70,7 @@ export type Database = {
           location?: string | null
           name: string
           notes?: string | null
+          overwatered_on?: string | null
           type?: string | null
           user_id: string
           watering_interval_days?: number
@@ -83,6 +85,7 @@ export type Database = {
           location?: string | null
           name?: string
           notes?: string | null
+          overwatered_on?: string | null
           type?: string | null
           user_id?: string
           watering_interval_days?: number

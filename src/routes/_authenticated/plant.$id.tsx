@@ -1,13 +1,15 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Droplet, Trash2, CalendarDays } from "lucide-react";
+import { Droplet, Trash2, CalendarDays, TriangleAlert } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Foliage } from "@/components/foliage";
 import { BackButton, BigStat, IconBubble, Segmented } from "@/components/garden-ui";
 import { PlantForm } from "@/components/plant-form";
-import { deletePlant, getPlant, updatePlant, waterPlant } from "@/lib/plants.functions";
+import { deletePlant, getPlant, updatePlant } from "@/lib/plants.functions";
+import { useWaterAction } from "@/lib/use-water";
+import { overwaterInfo } from "@/lib/watering";
 import { daysBetween, faDate, toFa } from "@/lib/fa";
 import { PlantIcon } from "@/components/flat-art";
 
@@ -37,7 +39,7 @@ function PlantPage() {
   const qc = useQueryClient();
   const updateFn = useServerFn(updatePlant);
   const deleteFn = useServerFn(deletePlant);
-  const waterFn = useServerFn(waterPlant);
+  const water = useWaterAction();
   const [tab, setTab] = useState<"info" | "edit">("info");
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -56,16 +58,13 @@ function PlantPage() {
 
   const daysLeft =
     plant.watering_interval_days - daysBetween(new Date(), new Date(plant.last_watered));
-  const due = daysLeft <= 0;
+  const ow = overwaterInfo(plant);
+  const due = !ow.overwatered && daysLeft <= 0;
 
   const handleWater = async () => {
     setBusy(true);
     try {
-      await waterFn({ data: { id } });
-      await refresh();
-      toast.success("آبیاری ثبت شد");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "خطا");
+      await water(id, plant.name);
     } finally {
       setBusy(false);
     }
@@ -163,10 +162,32 @@ function PlantPage() {
             </div>
           </section>
 
+          {ow.overwatered && (
+            <div
+              role="alert"
+              className="mb-3.5 flex items-start gap-3 rounded-3xl border border-[#F6C9C9] bg-gradient-to-br from-[#FDE4E4] to-[#FFFFFF]/90 p-4 text-[#C93C3C]"
+            >
+              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#E5484D] text-white">
+                <TriangleAlert className="size-5" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-[15px] font-extrabold">نه، زیاد آب دادی!</p>
+                <p className="mt-0.5 text-xs leading-6">
+                  خاک {plant.name} هنوز خیسه و آب زیادی ریشه‌ش رو می‌پوسونه. تا {toFa(ow.waitDays)}{" "}
+                  روز دیگه بهش آب نده.
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="mb-3.5 grid grid-cols-2 gap-3">
             <div
               className={`glass-card flex flex-col gap-3.5 rounded-3xl p-3.5 ${
-                due ? "!bg-gradient-to-br from-warn-soft/95 to-[#FFFFFF]/90" : ""
+                ow.overwatered
+                  ? "!border-[#F6C9C9] !bg-gradient-to-br from-[#FDE4E4] to-[#FFFFFF]/90"
+                  : due
+                    ? "!bg-gradient-to-br from-warn-soft/95 to-[#FFFFFF]/90"
+                    : ""
               }`}
             >
               <div className="flex items-center gap-2 text-[13px] font-semibold">
@@ -175,7 +196,13 @@ function PlantPage() {
                 </IconBubble>
                 آبیاری بعدی
               </div>
-              {daysLeft < 0 ? (
+              {ow.overwatered ? (
+                <BigStat
+                  value="زیادی!"
+                  label={`${toFa(ow.waitDays)} روز آب نده`}
+                  className="text-[#D64545]"
+                />
+              ) : daysLeft < 0 ? (
                 <BigStat
                   value={toFa(-daysLeft)}
                   unit="روز"
@@ -215,7 +242,9 @@ function PlantPage() {
           <button
             onClick={handleWater}
             disabled={busy}
-            className="mb-3 flex w-full items-center justify-center gap-2 rounded-full bg-primary py-[15px] text-[15px] font-semibold text-primary-foreground shadow-soft transition hover:bg-brand-900 disabled:opacity-60"
+            className={`mb-3 flex w-full items-center justify-center gap-2 rounded-full py-[15px] text-[15px] font-semibold text-white shadow-soft transition disabled:opacity-60 ${
+              ow.overwatered ? "bg-[#E5484D] hover:bg-[#D13C41]" : "bg-primary hover:bg-brand-900"
+            }`}
           >
             <Droplet className="size-4" />
             همین الان آب دادم
