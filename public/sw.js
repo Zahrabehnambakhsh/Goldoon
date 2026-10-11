@@ -1,6 +1,27 @@
-// Minimal service worker: lets Goldoon show system notifications and open the app when one is tapped.
+// Minimal service worker: shows Goldoon notifications (local and push) and opens the app when one is tapped.
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim()));
+
+// Daily watering reminder sent by the push-reminders edge function, even when the app is closed.
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { body: event.data ? event.data.text() : "" };
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title || "Goldoon", {
+      body: data.body || "وقت آبیاریه!",
+      icon: "/icon-192.png?v=3",
+      badge: "/icon-192.png?v=3",
+      tag: "goldoon-watering",
+      data: { url: data.url || "/reminders" },
+      dir: "rtl",
+      lang: "fa",
+    }),
+  );
+});
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();

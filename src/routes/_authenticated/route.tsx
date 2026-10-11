@@ -5,7 +5,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/bottom-nav";
 import { getProfile, listPlants } from "@/lib/plants.functions";
 import { daysBetween } from "@/lib/fa";
-import { maybeNotifyDuePlants, registerServiceWorker } from "@/lib/notifications";
+import {
+  enablePush,
+  maybeNotifyDuePlants,
+  readNotifySettings,
+  registerServiceWorker,
+  saveNotifySettings,
+} from "@/lib/notifications";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -37,12 +43,19 @@ function AuthedLayout() {
   );
 }
 
-/** While the app is open, checks every 15 minutes whether today's reminder is due. */
+/** Push reminders come from the server; without push, checks every 15 minutes while the app is open. */
 function useWateringNotifier() {
   const { data: plants } = useQuery({ queryKey: ["plants"], queryFn: () => listPlants() });
 
   useEffect(() => {
     registerServiceWorker();
+    // Keep this device's push subscription fresh (also upgrades older in-app-only reminders).
+    const settings = readNotifySettings();
+    if (settings.enabled && "Notification" in window && Notification.permission === "granted") {
+      enablePush(settings.time)
+        .catch(() => false)
+        .then((push) => saveNotifySettings({ ...readNotifySettings(), push }));
+    }
   }, []);
 
   useEffect(() => {

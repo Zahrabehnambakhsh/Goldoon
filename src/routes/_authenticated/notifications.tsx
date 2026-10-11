@@ -4,6 +4,8 @@ import { Bell, BellOff, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { BackButton, IconBubble, Segmented } from "@/components/garden-ui";
 import {
+  disablePush,
+  enablePush,
   notificationsSupported,
   readNotifySettings,
   saveNotifySettings,
@@ -36,9 +38,22 @@ function NotificationsPage() {
     saveNotifySettings(next);
   };
 
+  /** Registers this device for server push; falls back to in-app reminders if that fails. */
+  const connectPush = async (next: NotifySettings) => {
+    let push = false;
+    try {
+      push = await enablePush(next.time);
+    } catch {
+      push = false;
+    }
+    update({ ...next, push });
+    return push;
+  };
+
   const toggle = async () => {
     if (settings.enabled) {
-      update({ ...settings, enabled: false });
+      update({ ...settings, enabled: false, push: false });
+      disablePush().catch(() => {});
       toast.success("یادآور خاموش شد");
       return;
     }
@@ -53,8 +68,8 @@ function NotificationsPage() {
       toast.error("اجازهٔ اعلان داده نشد. از تنظیمات مرورگر فعالش کن.");
       return;
     }
-    update({ ...settings, enabled: true });
-    toast.success("یادآور روشن شد");
+    const push = await connectPush({ ...settings, enabled: true });
+    toast.success(push ? "یادآور روشن شد؛ حتی وقتی گلدون بسته‌ست خبرت می‌کنیم" : "یادآور روشن شد");
   };
 
   const test = async () => {
@@ -80,7 +95,11 @@ function NotificationsPage() {
           <div className="min-w-0 flex-1">
             <p className="text-[15px] font-bold">اعلان روزانه</p>
             <p className="text-xs text-muted-foreground">
-              {settings.enabled ? "روشن روی همین دستگاه" : "خاموش"}
+              {!settings.enabled
+                ? "خاموش"
+                : settings.push
+                  ? "روشن؛ حتی وقتی برنامه بسته‌ست"
+                  : "روشن روی همین دستگاه"}
             </p>
           </div>
           <button
@@ -109,7 +128,11 @@ function NotificationsPage() {
             type="time"
             dir="ltr"
             value={settings.time}
-            onChange={(e) => update({ ...settings, time: e.target.value || "09:00" })}
+            onChange={(e) => {
+              const next = { ...settings, time: e.target.value || "09:00" };
+              update(next);
+              if (next.enabled) connectPush(next);
+            }}
             className="rounded-2xl border border-input bg-white px-3 py-2 text-sm outline-none focus:border-primary"
           />
         </label>
@@ -130,8 +153,9 @@ function NotificationsPage() {
       </button>
 
       <p className="mb-6 rounded-3xl bg-brand-100 p-3.5 text-xs leading-6">
-        هر روز بعد از ساعتی که انتخاب کردی، اگه گیاهی آب بخواد یک اعلان می‌گیری. اعلان وقتی می‌آد که
-        گلدون توی مرورگر یا به‌صورت برنامهٔ نصب‌شده باز باشه (حتی پشت برنامه‌های دیگه).
+        هر روز بعد از ساعتی که انتخاب کردی، اگه گیاهی روز آبیاریش باشه یک اعلان «برو آب بده»
+        می‌گیری، حتی وقتی گلدون بسته‌ست. روی آیفون باید اول گلدون رو با «Add to Home Screen» به
+        صفحهٔ اصلی اضافه کنی و از همون آیکون بازش کنی، بعد یادآور رو روشن کنی.
       </p>
     </div>
   );
