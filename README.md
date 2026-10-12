@@ -1,28 +1,21 @@
 # Goldoon (گلدون)
+Persian home plant care app: watering reminders, AI-powered watering schedule suggestions, and plant disease detection from photos.
 
-اپ فارسی مراقبت از گیاهان خانگی: یادآور آبیاری، پیشنهاد دور آبیاری با هوش مصنوعی و تشخیص بیماری گیاه از روی عکس.
+## Features
+- Sign in & sign up with email (Supabase Auth)
+- Garden: plant cards, today’s status, and weekly watering chart
+- Add, edit, and delete plants with photo, type, light, and watering interval
+- AI-powered watering interval suggestions
+- Smart diagnosis: Persian chat with an AI plant expert, with photo upload support
+- Reminders (today / week) and daily device notifications
+- Watering history, total waterings, and consecutive days streak
+- Profile and account information
 
-## امکانات
+## Tech Stack
+React 19, TanStack Start & Router, Tailwind CSS 4, Supabase (Postgres + Auth), Vercel AI SDK with any OpenAI-compatible service (default: Google Gemini).
 
-- ورود و ثبت‌نام با ایمیل (Supabase Auth)
-- باغچه: کارت گیاه‌ها، وضعیت امروز و نمودار آبیاری هفته
-- افزودن، ویرایش و حذف گیاه با عکس، نوع، نور و دور آبیاری
-- پیشنهاد دور آبیاری با هوش مصنوعی
-- تشخیص هوشمند: چت فارسی با متخصص گیاه هوش مصنوعی، با امکان ارسال عکس
-- یادآورها (امروز / هفته) و اعلان روزانه روی دستگاه
-- سابقهٔ آبیاری، تعداد آبیاری‌ها و روزهای پشت‌سرهم
-- پروفایل و اطلاعات حساب
-
-## فناوری‌ها
-
-React 19، TanStack Start و Router، Tailwind CSS 4، Supabase (Postgres + Auth)، Vercel AI SDK با هر سرویس سازگار با OpenAI (پیش‌فرض Google Gemini).
-
-## اجرا
-
+## Getting Started
 ```sh
-cp .env.example .env   # مقادیر Supabase و AI_API_KEY را پر کنید
+cp .env.example .env   # Fill in your Supabase and AI_API_KEY values
 npm install
 npm run dev            # http://localhost:8080
-```
-
-راهنمای کامل راه‌اندازی دیتابیس، کلید هوش مصنوعی و انتشار روی سرور در [DEPLOY.md](DEPLOY.md) است.
