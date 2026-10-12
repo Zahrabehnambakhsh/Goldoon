@@ -44,8 +44,33 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
+/**
+ * With PUBLIC_URL set (e.g. https://mygoldoon.ir), the old *.darkube.ir address and the www
+ * variant redirect there, so one address is used everywhere (login, install, notifications).
+ */
+function redirectToPublicUrl(request: Request): Response | null {
+  const raw = process.env.PUBLIC_URL;
+  if (!raw) return null;
+  let target: URL;
+  try {
+    target = new URL(raw);
+  } catch {
+    return null;
+  }
+  const url = new URL(request.url);
+  const host = (request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? url.host)
+    .split(",")[0]
+    .trim()
+    .toLowerCase();
+  const old = host.endsWith(".darkube.ir") || host === `www.${target.host}`;
+  if (!old || host === target.host) return null;
+  return Response.redirect(new URL(url.pathname + url.search, target).href, 308);
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
+    const redirect = redirectToPublicUrl(request);
+    if (redirect) return redirect;
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
