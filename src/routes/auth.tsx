@@ -311,7 +311,7 @@ function AuthPage() {
                   </div>
                 </>
               )}
-              {phoneLogin ? (
+              {signupOpen ? (
                 <>
                   <div className="mb-3.5 grid grid-cols-2 gap-1 rounded-2xl bg-[#EAF2EB] p-1">
                     {(
@@ -319,19 +319,36 @@ function AuthPage() {
                         ["email", "ایمیل", Mail],
                         ["phone", "موبایل", Smartphone],
                       ] as const
-                    ).map(([m, label, Icon]) => (
-                      <button
-                        key={m}
-                        type="button"
-                        onClick={() => setMethod(m)}
-                        className={`flex items-center justify-center gap-1.5 rounded-xl py-2 text-[13px] font-semibold transition ${
-                          method === m ? "bg-primary text-primary-foreground" : "text-foreground"
-                        }`}
-                      >
-                        <Icon className="size-4" />
-                        {label}
-                      </button>
-                    ))}
+                    ).map(([m, label, Icon]) => {
+                      // Phone login stays visible but greyed out until PHONE_LOGIN is switched on.
+                      const unavailable = m === "phone" && !phoneLogin;
+                      return (
+                        <button
+                          key={m}
+                          type="button"
+                          title={unavailable ? "ورود با موبایل فعلاً غیرفعاله" : undefined}
+                          aria-disabled={unavailable}
+                          onClick={() =>
+                            unavailable
+                              ? toast.info("ورود با موبایل فعلاً غیرفعاله؛ به‌زودی می‌آد")
+                              : setMethod(m)
+                          }
+                          className={`flex items-center justify-center gap-1.5 rounded-xl py-2 text-[13px] font-semibold transition ${
+                            unavailable
+                              ? "cursor-not-allowed text-muted-foreground opacity-60"
+                              : method === m
+                                ? "bg-primary text-primary-foreground"
+                                : "text-foreground"
+                          }`}
+                        >
+                          <Icon className="size-4" />
+                          {label}
+                          {unavailable && (
+                            <span className="text-[10px] font-medium">(به‌زودی)</span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </>
               ) : null}
@@ -394,7 +411,7 @@ function AuthPage() {
                   </Field>
 
                   {mode === "login" && (
-                    <div className="flex justify-end">
+                    <div className="flex justify-start">
                       <button
                         type="button"
                         onClick={() => setView("forgot")}
