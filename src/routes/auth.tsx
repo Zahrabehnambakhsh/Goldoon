@@ -55,7 +55,7 @@ function faError(err: unknown): string {
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { signupOpen } = getPublicEnv();
+  const { signupOpen, phoneLogin, googleLogin } = getPublicEnv();
   const [method, setMethod] = useState<Method>("email");
   const [view, setView] = useState<View>("form");
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -292,7 +292,7 @@ function AuthPage() {
             </form>
           ) : (
             <>
-              {signupOpen ? (
+              {googleLogin && (
                 <>
                   <button
                     type="button"
@@ -309,7 +309,10 @@ function AuthPage() {
                     یا
                     <span className="h-px flex-1 bg-input" />
                   </div>
-
+                </>
+              )}
+              {phoneLogin ? (
+                <>
                   <div className="mb-3.5 grid grid-cols-2 gap-1 rounded-2xl bg-[#EAF2EB] p-1">
                     {(
                       [

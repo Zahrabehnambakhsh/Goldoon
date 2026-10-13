@@ -19,6 +19,20 @@ export const sendChat = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const model = getAiModel();
 
+    // Daily cap per user: everyone shares one AI key, so this keeps the bill predictable.
+    const limit = Number(process.env.AI_DAILY_LIMIT) || 30;
+    const dayStart = new Date();
+    dayStart.setUTCHours(0, 0, 0, 0);
+    const { count: usedToday } = await context.supabase
+      .from("chat_messages")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", context.userId)
+      .eq("role", "user")
+      .gte("created_at", dayStart.toISOString());
+    if ((usedToday ?? 0) >= limit) {
+      throw new Error("سهمیهٔ امروزِ سوال از هوش مصنوعی تموم شد؛ فردا دوباره امتحان کن 🌱");
+    }
+
     // Persist user msg
     const { error: insertError } = await context.supabase.from("chat_messages").insert({
       user_id: context.userId,
