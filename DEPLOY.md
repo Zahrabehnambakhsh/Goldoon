@@ -4,11 +4,11 @@
 
 ## ۱. پیش‌نیازها
 
-| مورد | توضیح |
-| --- | --- |
-| Node.js 22 | روی سرور یا کامپیوتر خودتان |
-| یک پروژه Supabase | دیتابیس و ورود کاربران — رایگان در [supabase.com](https://supabase.com) |
-| کلید API هوش مصنوعی | OpenAI، OpenRouter، Gemini یا هر سرویس سازگار با OpenAI |
+| مورد                | توضیح                                                                   |
+| ------------------- | ----------------------------------------------------------------------- |
+| Node.js 22          | روی سرور یا کامپیوتر خودتان                                             |
+| یک پروژه Supabase   | دیتابیس و ورود کاربران — رایگان در [supabase.com](https://supabase.com) |
+| کلید API هوش مصنوعی | OpenAI، OpenRouter، Gemini یا هر سرویس سازگار با OpenAI                 |
 
 ## ۲. راه‌اندازی دیتابیس (Supabase)
 
@@ -45,15 +45,18 @@
 برنامه چهار روش ورود دارد. هر کدام باید یک بار در Supabase روشن شود:
 
 **ایمیل و رمز عبور، فراموشی رمز و تأیید ایمیل**
+
 - به‌صورت پیش‌فرض روشن است. در **Authentication > URL Configuration** آدرس سایت را در Site URL بگذارید و این دو را به Redirect URLs اضافه کنید: `https://دامنه/home` و `https://دامنه/reset-password`.
 - اگر تأیید ایمیل (Confirm email) روشن باشد، کاربر بعد از ثبت‌نام باید روی لینک ایمیل بزند. در صفحهٔ ورود دکمهٔ «دوباره بفرست» برای ارسال دوبارهٔ ایمیل تأیید هست.
 - ایمیل‌های پیش‌فرض Supabase محدودیت تعداد دارند. برای استفادهٔ واقعی در **Authentication > Emails > SMTP Settings** یک سرویس ایمیل (SMTP) وصل کنید.
 
 **ورود با گوگل**
+
 1. در [Google Cloud Console](https://console.cloud.google.com) یک OAuth Client از نوع Web بسازید و در Authorized redirect URIs آدرسی را بگذارید که Supabase در صفحهٔ Google provider نشان می‌دهد (`https://<پروژه>.supabase.co/auth/v1/callback`).
 2. در Supabase در **Authentication > Providers > Google** آن را روشن کنید و Client ID و Client Secret را وارد کنید.
 
 **ورود با موبایل و کد پیامکی (کاوه‌نگار)**
+
 1. در [کاوه‌نگار](https://kavenegar.com) حساب بسازید، کلید API بگیرید و یک الگوی «تأیید» بسازید که متنش مثلاً این باشد: `کد ورود گلدون: %token%`. صبر کنید تا الگو تأیید شود.
 2. در Supabase در **Authentication > Providers > Phone** ورود با موبایل را روشن کنید (سرویس پیامک داخلی Supabase را لازم ندارید).
 3. در **Authentication > Hooks** یک **Send SMS hook** از نوع HTTPS بسازید با آدرس `https://دامنه/api/sms-hook` و رمزی که Supabase می‌سازد را بردارید.
@@ -71,13 +74,14 @@ cp .env.example .env
 
 ### هوش مصنوعی رایگان
 
-| سرویس | هزینه | `AI_BASE_URL` | `AI_MODEL` |
-| --- | --- | --- | --- |
-| **Google Gemini** (پیش‌فرض) | سهمیه‌ی روزانه‌ی رایگان | `https://generativelanguage.googleapis.com/v1beta/openai` | `gemini-flash-latest` |
-| OpenRouter | مدل‌های `:free` رایگان‌اند | `https://openrouter.ai/api/v1` | `google/gemma-3-27b-it:free` |
-| OpenAI | پولی | `https://api.openai.com/v1` | `gpt-4o-mini` |
+| سرویس                       | هزینه                      | `AI_BASE_URL`                                             | `AI_MODEL`                   |
+| --------------------------- | -------------------------- | --------------------------------------------------------- | ---------------------------- |
+| **Google Gemini** (پیش‌فرض) | سهمیه‌ی روزانه‌ی رایگان    | `https://generativelanguage.googleapis.com/v1beta/openai` | `gemini-flash-latest`        |
+| OpenRouter                  | مدل‌های `:free` رایگان‌اند | `https://openrouter.ai/api/v1`                            | `google/gemma-3-27b-it:free` |
+| OpenAI                      | پولی                       | `https://api.openai.com/v1`                               | `gpt-4o-mini`                |
 
 گرفتن کلید رایگان Gemini:
+
 1. به [aistudio.google.com/apikey](https://aistudio.google.com/apikey) بروید و با حساب گوگل وارد شوید.
 2. روی **Create API key** بزنید و کلید را کپی کنید.
 3. در `.env` جلوی `AI_API_KEY` بگذارید.
@@ -141,20 +145,21 @@ example.com {
 2. **پورت سرویس** را `3000` بگذارید.
 3. در بخش **متغیرهای محیطی** این‌ها را وارد کنید:
 
-   | متغیر | مقدار |
-   | --- | --- |
-   | `SUPABASE_URL` | آدرس پروژهٔ Supabase |
-   | `SUPABASE_PUBLISHABLE_KEY` | کلید anon/publishable |
-   | `AI_API_KEY` | کلید سرویس هوش مصنوعی |
-   | `AI_BASE_URL` | `https://api.avalai.ir/v1` |
-   | `AI_MODEL` | `gemini-2.5-flash` |
-   | `KAVENEGAR_API_KEY` | کلید کاوه‌نگار (برای ورود با موبایل) |
-   | `KAVENEGAR_TEMPLATE` | نام الگوی تأیید در کاوه‌نگار |
-   | `SEND_SMS_HOOK_SECRET` | رمز Send SMS hook در Supabase |
+   | متغیر                      | مقدار                                |
+   | -------------------------- | ------------------------------------ |
+   | `SUPABASE_URL`             | آدرس پروژهٔ Supabase                 |
+   | `SUPABASE_PUBLISHABLE_KEY` | کلید anon/publishable                |
+   | `AI_API_KEY`               | کلید سرویس هوش مصنوعی                |
+   | `AI_BASE_URL`              | `https://api.avalai.ir/v1`           |
+   | `AI_MODEL`                 | `gemini-2.5-flash`                   |
+   | `KAVENEGAR_API_KEY`        | کلید کاوه‌نگار (برای ورود با موبایل) |
+   | `KAVENEGAR_TEMPLATE`       | نام الگوی تأیید در کاوه‌نگار         |
+   | `SEND_SMS_HOOK_SECRET`     | رمز Send SMS hook در Supabase        |
 
 4. دامنه را در بخش دامنه‌ها وصل کنید و همان آدرس را در Supabase در **Authentication > URL Configuration** هم وارد کنید.
 
 نکته‌های سرور داخل ایران:
+
 - **هوش مصنوعی:** گوگل (Gemini) و OpenRouter درخواست‌های سرورهای ایران را رد می‌کنند. از سرویس ایرانی سازگار با OpenAI مثل [AvalAI](https://avalai.ir) استفاده کنید (مقادیر جدول بالا).
 - **Docker Hub:** اگر build در دریافت `node:22-alpine` خطا داد، آینهٔ رجیستری همروش را با build arg بدهید: `NODE_IMAGE=<آدرس آینه>/library/node:22-alpine`.
 - **Supabase:** کاربران مستقیماً از مرورگر به Supabase وصل می‌شوند؛ بعد از راه‌اندازی، ورود و ثبت‌نام را از اینترنت ایران امتحان کنید.
