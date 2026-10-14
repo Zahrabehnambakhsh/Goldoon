@@ -1,5 +1,20 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 
+/**
+ * Extra speed settings for generateText. AI_REASONING_EFFORT ("low" or "none" for Gemini) makes the
+ * model skip long "thinking", which is where most of the waiting time goes; unset = provider default.
+ */
+export function aiTuning() {
+  const effort = process.env.AI_REASONING_EFFORT?.trim();
+  if (!effort) return {};
+  return {
+    providerOptions: {
+      ai: { reasoningEffort: effort },
+      openaiCompatible: { reasoningEffort: effort },
+    },
+  };
+}
+
 // Any OpenAI-compatible API works: OpenAI, OpenRouter, Google Gemini, Groq, a local Ollama, ...
 // Configure via environment variables:
 //   AI_API_KEY   (required) API key of the provider

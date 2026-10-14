@@ -16,8 +16,11 @@ import {
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async ({ context }) => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) throw redirect({ to: "/auth" });
+    // Read the session from this device instead of asking the Supabase server on every page
+    // change (that is a slow round trip abroad). The server re-checks the token on every request.
+    const { data } = await supabase.auth.getSession();
+    const user = data.session?.user;
+    if (!user) throw redirect({ to: "/auth" });
 
     // First login: ask what to call them before anything else. Only when the column exists,
     // so the app keeps working before the display_name migration has run.
@@ -28,7 +31,7 @@ export const Route = createFileRoute("/_authenticated")({
     if (profile && "display_name" in profile && !profile.display_name) {
       throw redirect({ to: "/welcome" });
     }
-    return { user: data.user };
+    return { user };
   },
   component: AuthedLayout,
 });

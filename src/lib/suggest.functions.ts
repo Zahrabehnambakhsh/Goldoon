@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { generateText, Output } from "ai";
-import { getAiModel } from "./ai-gateway.server";
+import { aiTuning, getAiModel } from "./ai-gateway.server";
 
 const Input = z.object({
   name: z.string().min(1).max(80),
@@ -35,6 +35,7 @@ export const suggestWateringInterval = createServerFn({ method: "POST" })
       const { output } = await generateText({
         model,
         prompt,
+        ...aiTuning(),
         output: Output.object({
           schema: z.object({
             days: z.number(),
@@ -47,6 +48,7 @@ export const suggestWateringInterval = createServerFn({ method: "POST" })
       // fallback: plain text + manual JSON parse
       const { text } = await generateText({
         model,
+        ...aiTuning(),
         prompt: `${prompt}\n\nفقط JSON خالص با این شکل برگردان: {"days": number, "reason": string}`,
       });
       const match = text.match(/\{[\s\S]*\}/);

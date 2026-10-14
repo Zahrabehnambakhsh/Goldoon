@@ -19,8 +19,8 @@ export const Route = createFileRoute("/welcome")({
     ],
   }),
   beforeLoad: async ({ context }) => {
-    const { data } = await supabase.auth.getUser();
-    if (!data.user) throw redirect({ to: "/auth" });
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) throw redirect({ to: "/auth" });
     const profile = await context.queryClient.ensureQueryData({
       queryKey: ["profile"],
       queryFn: () => getProfile(),

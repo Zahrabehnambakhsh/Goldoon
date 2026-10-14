@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { getAiModel } from "./ai-gateway.server";
+import { aiTuning, getAiModel } from "./ai-gateway.server";
 import { generateText } from "ai";
 
 const SYSTEM_PROMPT =
@@ -43,14 +43,14 @@ export const sendChat = createServerFn({ method: "POST" })
     });
     if (insertError) console.error("[chat] could not save message", insertError.message);
 
-    // Latest 30 messages (newest first from the DB, then back to chronological order).
+    // Latest 12 messages (newest first from the DB, then back to chronological order).
     const { data: recent } = await context.supabase
       .from("chat_messages")
       .select("role, content, image_url")
       .eq("user_id", context.userId)
       .eq("session_id", data.session_id)
       .order("created_at", { ascending: false })
-      .limit(30);
+      .limit(12);
     const history = (recent ?? []).reverse();
     // If saving failed, still answer the message that was just sent.
     if (insertError || history.length === 0) {
@@ -88,6 +88,9 @@ export const sendChat = createServerFn({ method: "POST" })
       const { text } = await generateText({
         model,
         instructions: SYSTEM_PROMPT,
+        // The prompt asks for short answers; a cap keeps a rambling reply from taking ages.
+        maxOutputTokens: 700,
+        ...aiTuning(),
         // @ts-expect-error - multimodal messages typed loosely
         messages,
       });
