@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { isTooSoon } from "./watering";
+import type { StreakLog } from "./streak";
 
 const PlantInput = z.object({
   name: z.string().min(1).max(80),
@@ -158,21 +159,27 @@ export const updatePlant = createServerFn({ method: "POST" })
     return row;
   });
 
-/** Watering history: total count plus every watering date from the last 60 days. */
+/** Watering history: total count, plus each watering (plant and date) from the last ~5 months. */
 export const getWateringStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const since = new Date();
-    since.setDate(since.getDate() - 60);
+    since.setDate(since.getDate() - 150);
     const [{ count, error: countError }, { data: rows, error: rowsError }] = await Promise.all([
       context.supabase.from("watering_logs").select("id", { count: "exact", head: true }),
       context.supabase
         .from("watering_logs")
-        .select("watered_on")
+        .select("plant_id, watered_on")
         .gte("watered_on", since.toISOString().slice(0, 10)),
     ]);
-    if (countError || rowsError) return { available: false, total: 0, dates: [] as string[] };
-    return { available: true, total: count ?? 0, dates: (rows ?? []).map((r) => r.watered_on) };
+    if (countError || rowsError) {
+      return { available: false, total: 0, dates: [] as string[], logs: [] as StreakLog[] };
+    }
+    const logs: StreakLog[] = (rows ?? []).map((r) => ({
+      plant_id: r.plant_id,
+      watered_on: r.watered_on,
+    }));
+    return { available: true, total: count ?? 0, dates: logs.map((l) => l.watered_on), logs };
   });
 
 export const deletePlant = createServerFn({ method: "POST" })

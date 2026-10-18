@@ -3,7 +3,8 @@ import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { LogOut, User as UserIcon, Bell, Sprout, Droplet, CalendarDays, Flame } from "lucide-react";
 import { listPlants, getProfile, getWateringStats } from "@/lib/plants.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { toFa, daysBetween, wateringStreak, addressName } from "@/lib/fa";
+import { toFa, daysBetween, localIso, addressName } from "@/lib/fa";
+import { careStreak } from "@/lib/streak";
 import { toLocalMobile } from "@/lib/phone";
 import { toast } from "sonner";
 import { BackButton, BigStat, IconBubble, Segmented } from "@/components/garden-ui";
@@ -53,7 +54,7 @@ function ProfilePage() {
           Math.floor(daysBetween(new Date(), new Date(p.created_at)) / p.watering_interval_days),
         0,
       );
-  const streak = wateringStreak(waterings.dates);
+  const streak = careStreak(plants, waterings.logs, localIso(new Date()));
   const daysUsing = profile?.created_at
     ? Math.max(1, daysBetween(new Date(), new Date(profile.created_at)))
     : 1;
@@ -116,10 +117,10 @@ function ProfilePage() {
         <Tile
           tone="cream"
           icon={<Flame className="size-5 text-warn" />}
-          title="پشت‌سرهم"
+          title="به‌موقع"
           value={toFa(streak)}
-          unit="روز"
-          label="آبیاری بدون وقفه"
+          unit="بار"
+          label="آبیاری پشت‌سرهم بدون تأخیر"
           highlight
         />
       </div>

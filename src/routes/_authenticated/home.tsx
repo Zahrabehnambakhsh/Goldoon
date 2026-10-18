@@ -16,7 +16,8 @@ import {
 import { listPlants, getProfile, getWateringStats } from "@/lib/plants.functions";
 import { useWaterAction } from "@/lib/use-water";
 import { overwaterInfo } from "@/lib/watering";
-import { toFa, daysBetween, localIso, wateringStreak, addressName } from "@/lib/fa";
+import { toFa, daysBetween, localIso, addressName } from "@/lib/fa";
+import { careStreak } from "@/lib/streak";
 import { HeroPlant, PlantIcon } from "@/components/flat-art";
 import { Foliage } from "@/components/foliage";
 import { SquareButton, BigStat } from "@/components/garden-ui";
@@ -71,7 +72,7 @@ function HomePage() {
   const daysUsing = profile?.created_at
     ? Math.max(1, daysBetween(today, new Date(profile.created_at)))
     : 1;
-  const streak = wateringStreak(waterings.dates, today);
+  const streak = careStreak(plants, waterings.logs, localIso(today));
   const isEmpty = plants.length === 0;
 
   const withLeft = plants
@@ -141,7 +142,7 @@ function HomePage() {
           )}
           {toFa(streak > 0 ? streak : daysUsing)}
           <span className="text-[11px] font-medium text-muted-foreground">
-            {streak > 0 ? "روز پشت‌سرهم" : "روز با گلدون"}
+            {streak > 0 ? "آبیاری به‌موقع" : "روز با گلدون"}
           </span>
         </div>
         <HeroPlant className="pointer-events-none absolute left-[18px] top-[76px] size-[136px]" />

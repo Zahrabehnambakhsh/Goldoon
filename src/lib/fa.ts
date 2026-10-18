@@ -38,19 +38,6 @@ export function localIso(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-/** Consecutive days with at least one watering, ending today (or yesterday if none yet today). */
-export function wateringStreak(dates: string[], today = new Date()): number {
-  const set = new Set(dates);
-  const d = new Date(today);
-  if (!set.has(localIso(d))) d.setDate(d.getDate() - 1);
-  let n = 0;
-  while (set.has(localIso(d))) {
-    n++;
-    d.setDate(d.getDate() - 1);
-  }
-  return n;
-}
-
 /** The name the app addresses the user by: chosen display name, else profile name. */
 export function addressName(
   profile: { display_name?: string | null; name?: string | null } | null | undefined,
