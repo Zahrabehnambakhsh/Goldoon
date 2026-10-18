@@ -1,3 +1,4 @@
+import { JalaliDateInput } from "@/components/jalali-date-input";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
@@ -194,12 +195,11 @@ function AccountPage() {
         </Field>
 
         <Field label="تاریخ تولد">
-          <input
-            type="date"
+          <JalaliDateInput
+            optional
+            yearsBack={100}
             value={birthDate ?? ""}
-            onChange={(e) => setBirthDate(e.target.value)}
-            dir="ltr"
-            className="w-full rounded-2xl border border-input bg-white px-4 py-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary"
+            onChange={setBirthDate}
           />
           <p className="mt-1 text-[11px] text-muted-foreground">
             برای تخفیف تولد در نسخه پولی استفاده می‌شود.

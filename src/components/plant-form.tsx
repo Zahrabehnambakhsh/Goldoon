@@ -1,3 +1,4 @@
+import { JalaliDateInput } from "@/components/jalali-date-input";
 import { useServerFn } from "@tanstack/react-start";
 import { Camera, Droplet, Minus, Plus, Sparkles } from "lucide-react";
 import { useState } from "react";
@@ -216,13 +217,7 @@ export function PlantForm({
 
       <div className="glass-card space-y-3.5 rounded-[30px] p-4">
         <Field label="آخرین آبیاری">
-          <input
-            type="date"
-            dir="ltr"
-            value={lastWatered}
-            onChange={(e) => setLastWatered(e.target.value)}
-            className={INPUT}
-          />
+          <JalaliDateInput value={lastWatered} onChange={setLastWatered} yearsBack={2} />
         </Field>
 
         <Field label="یادداشت">
