@@ -1,11 +1,14 @@
 import { JalaliDateInput } from "@/components/jalali-date-input";
 import { useServerFn } from "@tanstack/react-start";
 import { Camera, Droplet, Minus, Plus, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Foliage } from "@/components/foliage";
 import { BigStat } from "@/components/garden-ui";
 import { suggestWateringInterval } from "@/lib/suggest.functions";
+import { listPlantCatalog } from "@/lib/plants.functions";
+import { buildIndex, exactMatch, searchCatalog, type CatalogPlant } from "@/lib/catalog";
 import { toFa } from "@/lib/fa";
 import { compressImage } from "@/lib/image";
 
@@ -44,6 +47,20 @@ export function PlantForm({
 }) {
   const suggestFn = useServerFn(suggestWateringInterval);
 
+  // Name suggestions: the catalog is loaded once and searched on the device while typing.
+  const { data: catalog } = useQuery({
+    queryKey: ["plant-catalog"],
+    queryFn: () => listPlantCatalog(),
+    staleTime: Infinity,
+    gcTime: Infinity,
+    retry: false,
+  });
+  const index = useMemo(() => buildIndex(catalog ?? []), [catalog]);
+  const [typing, setTyping] = useState(false);
+  const [active, setActive] = useState(-1);
+  const [fromCatalog, setFromCatalog] = useState(false);
+  const [autoLatin, setAutoLatin] = useState<string | null>(null); // latin name we filled ourselves
+
   const [name, setName] = useState(initial?.name ?? "");
   const [latin, setLatin] = useState(initial?.latin_name ?? "");
   const [type, setType] = useState(initial?.type ?? "indoor");
@@ -55,6 +72,53 @@ export function PlantForm({
   const [loading, setLoading] = useState(false);
   const [suggesting, setSuggesting] = useState(false);
   const [suggestReason, setSuggestReason] = useState<string | null>(null);
+
+  const matches = useMemo(() => (typing ? searchCatalog(index, name) : []), [typing, index, name]);
+
+  const onNameChange = (value: string) => {
+    setName(value);
+    setTyping(true);
+    setActive(-1);
+    setFromCatalog(false);
+    // Typed exactly the name of a known plant: fill in its scientific name right away.
+    const hit = exactMatch(index, value);
+    if (hit && (!latin.trim() || latin === autoLatin)) {
+      setLatin(hit.latin_name);
+      setAutoLatin(hit.latin_name);
+    }
+  };
+
+  /** Picking a suggestion fills in the scientific name, type, light and usual watering interval. */
+  const pick = (p: CatalogPlant) => {
+    setName(p.name_fa);
+    setLatin(p.latin_name);
+    setAutoLatin(p.latin_name);
+    setType(p.type);
+    if (p.light_level === "low" || p.light_level === "medium" || p.light_level === "high") {
+      setLight(p.light_level);
+    }
+    if (p.watering_interval_days) setInterval_(p.watering_interval_days);
+    setSuggestReason(null);
+    setFromCatalog(true);
+    setTyping(false);
+    setActive(-1);
+  };
+
+  const onNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (matches.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActive((i) => (i + 1) % matches.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActive((i) => (i <= 0 ? matches.length - 1 : i - 1));
+    } else if (e.key === "Enter" && active >= 0) {
+      e.preventDefault(); // choose the highlighted plant instead of submitting the form
+      pick(matches[active]);
+    } else if (e.key === "Escape") {
+      setTyping(false);
+    }
+  };
 
   const handleSuggest = async () => {
     if (!name.trim()) {
@@ -132,13 +196,53 @@ export function PlantForm({
 
       <div className="glass-card space-y-3.5 rounded-[30px] p-4">
         <Field label="نام گیاه">
-          <input
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="مثلاً پوتوس"
-            className={INPUT}
-          />
+          <div className="relative">
+            <input
+              required
+              value={name}
+              onChange={(e) => onNameChange(e.target.value)}
+              onKeyDown={onNameKeyDown}
+              onBlur={() => setTyping(false)}
+              placeholder="مثلاً پوتوس"
+              autoComplete="off"
+              role="combobox"
+              aria-expanded={matches.length > 0}
+              aria-autocomplete="list"
+              className={INPUT}
+            />
+            {matches.length > 0 && (
+              <ul
+                role="listbox"
+                className="absolute inset-x-0 top-full z-20 mt-1.5 overflow-hidden rounded-2xl border border-input bg-white shadow-soft"
+              >
+                {matches.map((p, i) => (
+                  <li
+                    key={p.name_fa}
+                    role="option"
+                    aria-selected={i === active}
+                    // mousedown (not click) so it runs before the input loses focus
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      pick(p);
+                    }}
+                    className={`flex cursor-pointer items-center justify-between gap-3 px-4 py-2.5 text-sm ${
+                      i === active ? "bg-brand-100" : "hover:bg-brand-100/60"
+                    }`}
+                  >
+                    <span className="font-semibold">{p.name_fa}</span>
+                    <span dir="ltr" className="truncate text-xs italic text-muted-foreground">
+                      {p.latin_name}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          {fromCatalog && (
+            <p className="mt-1.5 text-[11px] text-primary">
+              ✓ نام علمی، نور و دور آبیاری معمول این گیاه پر شد؛ هر کدوم رو خواستی عوض کن.
+            </p>
+          )}
         </Field>
 
         <Field label="نام علمی">

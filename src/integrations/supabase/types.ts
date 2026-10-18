@@ -44,6 +44,36 @@ export type Database = {
         }
         Relationships: []
       }
+      plant_catalog: {
+        Row: {
+          aliases: string[]
+          id: number
+          latin_name: string
+          light_level: string | null
+          name_fa: string
+          type: string
+          watering_interval_days: number | null
+        }
+        Insert: {
+          aliases?: string[]
+          id?: number
+          latin_name: string
+          light_level?: string | null
+          name_fa: string
+          type?: string
+          watering_interval_days?: number | null
+        }
+        Update: {
+          aliases?: string[]
+          id?: number
+          latin_name?: string
+          light_level?: string | null
+          name_fa?: string
+          type?: string
+          watering_interval_days?: number | null
+        }
+        Relationships: []
+      }
       plants: {
         Row: {
           created_at: string

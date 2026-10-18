@@ -25,6 +25,18 @@ export const listPlants = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
+/** The whole plant catalog (~100 rows). The form loads it once and searches it on the device. */
+export const listPlantCatalog = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("plant_catalog")
+      .select("name_fa, aliases, latin_name, type, light_level, watering_interval_days")
+      .order("name_fa");
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
 export const createPlant = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => PlantInput.parse(input))
