@@ -1,3 +1,4 @@
+import { track } from "@/lib/analytics";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { HeroPlant } from "@/components/flat-art";
 import { useEffect, useState } from "react";
@@ -97,6 +98,7 @@ function AuthPage() {
           setView("check-email");
           return;
         }
+        track("signed_up", { method: "email" });
         toast.success("ثبت‌نام موفق بود!");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password: pw });
@@ -104,6 +106,7 @@ function AuthPage() {
           if (error.message.toLowerCase().includes("email not confirmed")) setNeedsConfirm(true);
           throw error;
         }
+        track("logged_in", { method: "email" });
         toast.success("خوش اومدی!");
       }
       navigate({ to: "/home" });

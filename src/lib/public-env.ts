@@ -10,6 +10,10 @@ export type PublicEnv = {
   phoneLogin: boolean;
   /** GOOGLE_LOGIN=true adds "Continue with Google" (needs the Google provider in Supabase). */
   googleLogin: boolean;
+  /** Analytics (all optional): Microsoft Clarity project id, PostHog project key and host. */
+  clarityId: string;
+  posthogKey: string;
+  posthogHost: string;
 };
 
 const EMPTY: PublicEnv = {
@@ -18,6 +22,9 @@ const EMPTY: PublicEnv = {
   signupOpen: false,
   phoneLogin: false,
   googleLogin: false,
+  clarityId: "",
+  posthogKey: "",
+  posthogHost: "",
 };
 
 declare global {
@@ -34,6 +41,9 @@ export function getPublicEnv(): PublicEnv {
       signupOpen: process.env.SIGNUP_OPEN === "true",
       phoneLogin: process.env.SIGNUP_OPEN === "true" && process.env.PHONE_LOGIN === "true",
       googleLogin: process.env.SIGNUP_OPEN === "true" && process.env.GOOGLE_LOGIN === "true",
+      clarityId: (process.env.CLARITY_ID ?? "").trim(),
+      posthogKey: (process.env.POSTHOG_KEY ?? "").trim(),
+      posthogHost: (process.env.POSTHOG_HOST ?? "").trim(),
     };
   }
   return { ...EMPTY, ...window.__GOLDOON_ENV__ };

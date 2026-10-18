@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "sonner";
 import { publicEnvScript } from "@/lib/public-env";
+import { identifyUser, resetAnalyticsUser, startAnalytics } from "@/lib/analytics";
 
 function NotFoundComponent() {
   return (
@@ -134,7 +135,10 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange((event) => {
+    startAnalytics();
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) identifyUser(session.user.id);
+      if (event === "SIGNED_OUT") resetAnalyticsUser();
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();

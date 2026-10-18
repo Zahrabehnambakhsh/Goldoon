@@ -1,3 +1,4 @@
+import { track } from "@/lib/analytics";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { HeroPlant } from "@/components/flat-art";
 import { useServerFn } from "@tanstack/react-start";
@@ -59,6 +60,7 @@ function DiagnosePage() {
           image_url: img,
         },
       });
+      track("ai_chat_sent", { with_photo: Boolean(img) });
       qc.invalidateQueries({ queryKey: ["chat", SESSION_ID] });
     } catch (e) {
       const msg = e instanceof Error ? e.message : "";

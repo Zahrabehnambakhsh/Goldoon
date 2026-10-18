@@ -1,3 +1,4 @@
+import { track } from "./analytics";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -20,6 +21,7 @@ export function useWaterAction() {
   return async (id: string, name: string) => {
     try {
       const res = await waterFn({ data: { id } });
+      track("plant_watered", { overwatered: res.overwatered });
       await refresh(id);
       if (!res.overwatered) {
         toast.success("آبیاری ثبت شد");

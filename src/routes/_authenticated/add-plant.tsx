@@ -1,3 +1,4 @@
+import { track } from "@/lib/analytics";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -33,6 +34,11 @@ function AddPlantPage() {
         submitLabel="افزودن گیاه"
         onSubmit={async (values) => {
           await createFn({ data: values });
+          track("plant_added", {
+            type: values.type,
+            has_photo: Boolean(values.image_url),
+            has_latin_name: Boolean(values.latin_name),
+          });
           qc.invalidateQueries({ queryKey: ["plants"] });
           toast.success("گیاه اضافه شد");
           navigate({ to: "/home" });
