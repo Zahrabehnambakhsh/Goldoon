@@ -121,6 +121,14 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="fa" dir="rtl">
       <head>
         <script dangerouslySetInnerHTML={{ __html: publicEnvScript() }} />
+        {/* Registered straight from the page HTML (not only after React starts) so store tools and
+            browsers see the service worker right away. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})})}",
+          }}
+        />
         <HeadContent />
       </head>
       <body>
