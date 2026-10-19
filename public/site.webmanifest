@@ -1,4 +1,5 @@
 {
+  "id": "/",
   "name": "Goldoon",
   "short_name": "Goldoon",
   "description": "مراقبت هوشمند از گیاهان با یادآور آبیاری و تشخیص با هوش مصنوعی",
@@ -7,11 +8,36 @@
   "start_url": "/home",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#F1EBDF",
-  "theme_color": "#F1EBDF",
+  "orientation": "portrait",
+  "background_color": "#F4F8F3",
+  "theme_color": "#F4F8F3",
+  "categories": ["lifestyle", "utilities"],
   "icons": [
-    { "src": "/icon-192.png?v=3", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icon-512.png?v=3", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icon.svg?v=3", "sizes": "any", "type": "image/svg+xml" }
+    { "src": "/icon-192.png?v=3", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png?v=3", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-192.png?v=3", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-maskable-512.png?v=3", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon.svg?v=3", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    {
+      "name": "افزودن گیاه",
+      "short_name": "گیاه جدید",
+      "url": "/add-plant",
+      "icons": [{ "src": "/icon-192.png?v=3", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "یادآورهای آبیاری",
+      "short_name": "یادآورها",
+      "url": "/reminders",
+      "icons": [{ "src": "/icon-192.png?v=3", "sizes": "192x192", "type": "image/png" }]
+    }
+  ],
+  "screenshots": [
+    { "src": "/screenshots/home.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "صفحهٔ اصلی و وضعیت آبیاری گیاه‌ها" },
+    { "src": "/screenshots/plant.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "جزئیات گیاه و دکمهٔ آبیاری" },
+    { "src": "/screenshots/add-plant.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "افزودن گیاه با پیشنهاد نام و اسم علمی" },
+    { "src": "/screenshots/reminders.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "یادآورهای آبیاری" },
+    { "src": "/screenshots/profile.png", "sizes": "1080x1920", "type": "image/png", "form_factor": "narrow", "label": "پروفایل و آبیاری‌های به‌موقع" }
   ]
 }

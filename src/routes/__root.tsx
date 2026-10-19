@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "sonner";
 import { publicEnvScript } from "@/lib/public-env";
 import { identifyUser, resetAnalyticsUser, startAnalytics } from "@/lib/analytics";
+import { registerServiceWorker } from "@/lib/notifications";
 
 function NotFoundComponent() {
   return (
@@ -79,7 +80,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         name: "description",
         content: "مراقبت هوشمند از گیاهان با یادآور آبیاری و تشخیص با هوش مصنوعی.",
       },
-      { name: "theme-color", content: "#F1EBDF" },
+      { name: "theme-color", content: "#F4F8F3" },
       // Home-screen name and behavior when added on iPhone/Android
       { name: "apple-mobile-web-app-title", content: "Goldoon" },
       { name: "application-name", content: "Goldoon" },
@@ -136,6 +137,8 @@ function RootComponent() {
 
   useEffect(() => {
     startAnalytics();
+    // Registered for every visitor (not only after login) so the app is installable and works as a store app.
+    registerServiceWorker();
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) identifyUser(session.user.id);
       if (event === "SIGNED_OUT") resetAnalyticsUser();
