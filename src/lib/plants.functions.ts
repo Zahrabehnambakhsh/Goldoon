@@ -40,7 +40,7 @@ export const listPlantCatalog = createServerFn({ method: "GET" })
 
 export const createPlant = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => PlantInput.parse(input))
+  .validator((input: unknown) => PlantInput.parse(input))
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase
       .from("plants")
@@ -53,7 +53,7 @@ export const createPlant = createServerFn({ method: "POST" })
 
 export const waterPlant = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .validator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const today = new Date().toISOString().slice(0, 10);
 
@@ -100,7 +100,7 @@ export const waterPlant = createServerFn({ method: "POST" })
 /** Undoes the latest watering of a plant (for accidental taps). */
 export const undoWatering = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z
       .object({
         id: z.string().uuid(),
@@ -132,7 +132,7 @@ export const undoWatering = createServerFn({ method: "POST" })
 
 export const getPlant = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .validator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { data: row, error } = await context.supabase
       .from("plants")
@@ -146,7 +146,7 @@ export const getPlant = createServerFn({ method: "GET" })
 
 export const updatePlant = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => PlantInput.extend({ id: z.string().uuid() }).parse(input))
+  .validator((input: unknown) => PlantInput.extend({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { id, ...fields } = data;
     const { data: row, error } = await context.supabase
@@ -184,7 +184,7 @@ export const getWateringStats = createServerFn({ method: "GET" })
 
 export const deletePlant = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .validator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from("plants").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
@@ -224,7 +224,7 @@ const ProfileUpdateInput = z.object({
 
 export const updateProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => ProfileUpdateInput.parse(input))
+  .validator((input: unknown) => ProfileUpdateInput.parse(input))
   .handler(async ({ data, context }) => {
     const payload = {
       id: context.userId,
@@ -247,7 +247,7 @@ export const updateProfile = createServerFn({ method: "POST" })
 /** Saves the name the app uses to address the user (asked once after first login). */
 export const setDisplayName = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ display_name: z.string().trim().min(1, "یه اسم بنویس").max(40) }).parse(input),
   )
   .handler(async ({ data, context }) => {

@@ -15,7 +15,7 @@ const ChatInput = z.object({
 
 export const sendChat = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => ChatInput.parse(input))
+  .validator((input: unknown) => ChatInput.parse(input))
   .handler(async ({ data, context }) => {
     const model = getAiModel();
 
@@ -111,9 +111,7 @@ export const sendChat = createServerFn({ method: "POST" })
 
 export const getChatHistory = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ session_id: z.string().min(1).max(64) }).parse(input),
-  )
+  .validator((input: unknown) => z.object({ session_id: z.string().min(1).max(64) }).parse(input))
   .handler(async ({ data, context }) => {
     const { data: rows } = await context.supabase
       .from("chat_messages")

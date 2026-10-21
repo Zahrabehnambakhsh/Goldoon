@@ -13,7 +13,7 @@ const Input = z.object({
 
 export const suggestWateringInterval = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => Input.parse(input))
+  .validator((input: unknown) => Input.parse(input))
   .handler(async ({ data }) => {
     const model = getAiModel();
 

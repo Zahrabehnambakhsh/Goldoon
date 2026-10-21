@@ -67,20 +67,42 @@ function redirectToPublicUrl(request: Request): Response | null {
   return Response.redirect(new URL(url.pathname + url.search, target).href, 308);
 }
 
+/** Baseline browser protections on every response (no CSP: the inline env script and analytics need it). */
+function withSecurityHeaders(request: Request, response: Response): Response {
+  if (response.status === 101) return response;
+  const headers = new Headers(response.headers);
+  headers.set("X-Content-Type-Options", "nosniff");
+  headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  headers.set("X-Frame-Options", "DENY");
+  headers.set("Permissions-Policy", "camera=(self), microphone=(), geolocation=(), payment=()");
+  const proto = request.headers.get("x-forwarded-proto") ?? new URL(request.url).protocol;
+  if (proto.split(",")[0].trim().replace(":", "") === "https") {
+    headers.set("Strict-Transport-Security", "max-age=31536000");
+  }
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     const redirect = redirectToPublicUrl(request);
-    if (redirect) return redirect;
+    if (redirect) return withSecurityHeaders(request, redirect);
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      return withSecurityHeaders(request, await normalizeCatastrophicSsrResponse(response));
     } catch (error) {
       console.error(error);
-      return new Response(renderErrorPage(), {
-        status: 500,
-        headers: { "content-type": "text/html; charset=utf-8" },
-      });
+      return withSecurityHeaders(
+        request,
+        new Response(renderErrorPage(), {
+          status: 500,
+          headers: { "content-type": "text/html; charset=utf-8" },
+        }),
+      );
     }
   },
 };
